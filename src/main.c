@@ -31,6 +31,7 @@
   ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
+#include <stdio.h>
 #include "stm32l4xx_hal.h"
 #include "usart.h"
 #include "gpio.h"
@@ -79,6 +80,7 @@ int main(void)
   MX_USART2_UART_Init();
 
   /* USER CODE BEGIN 2 */
+  printf("Hello World!!!\n");
 
   /* USER CODE END 2 */
 

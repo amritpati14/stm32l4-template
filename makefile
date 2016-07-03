@@ -106,6 +106,7 @@ PROJECT_SOURCE			+=	main.c							\
 							stm32l4xx_hal_timebase_TIM.c	\
 							stm32l4xx_it.c					\
 							usart.c							\
+							systemcall.c					\
 
 
 MCU_CC_FLAGS = $(CORTEX_M4_HWFP_CC_FLAGS)

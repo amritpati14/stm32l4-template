@@ -48,6 +48,7 @@
 extern UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN Private defines */
+#define huartPC					huart2
 
 /* USER CODE END Private defines */
 
