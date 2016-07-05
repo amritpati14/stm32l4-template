@@ -94,6 +94,26 @@ PROJECT_SOURCE			+=	stm32l4xx_hal.c								\
 #							stm32l4xx_ll_usb.c							\
 #							stm32l4xx_ll_utils.c						\
 
+# FreeRTOS
+VPATH					+=  $(TOP)/lib/FreeRTOS/src
+
+PROJECT_INC_PATHS		+=	-I$(TOP)/lib/FreeRTOS/inc
+
+PROJECT_SOURCE			+=	croutine.c						\
+							event_groups.c					\
+							heap_2.c						\
+							list.c							\
+							port.c							\
+							queue.c							\
+							tasks.c							\
+							timers.c
+
+# FreeRTOS-CLI
+VPATH					+=  $(TOP)/lib/FreeRTOS-Plus-CLI
+
+PROJECT_INC_PATHS		+=	-I$(TOP)/lib/FreeRTOS-Plus-CLI
+
+PROJECT_SOURCE			+=	FreeRTOS_CLI.c
 
 # General project files
 VPATH					+=	$(TOP)/src						\
@@ -107,6 +127,7 @@ PROJECT_SOURCE			+=	main.c							\
 							stm32l4xx_it.c					\
 							usart.c							\
 							systemcall.c					\
+							console.c						\
 
 
 MCU_CC_FLAGS = $(CORTEX_M4_HWFP_CC_FLAGS)
