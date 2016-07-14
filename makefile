@@ -128,6 +128,7 @@ PROJECT_SOURCE			+=	main.c							\
 							usart.c							\
 							systemcall.c					\
 							console.c						\
+							util.c							\
 
 
 MCU_CC_FLAGS = $(CORTEX_M4_HWFP_CC_FLAGS)
