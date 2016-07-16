@@ -35,6 +35,7 @@
 #include "usart.h"
 #include "gpio.h"
 #include "console.h"
+#include "lcd1602-hal.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -80,6 +81,7 @@ int main(void)
   MX_USART2_UART_Init();
 
   CONSOLE_Init();
+  LCD_Init();
 
   /* USER CODE BEGIN 2 */
 
