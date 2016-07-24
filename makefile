@@ -123,6 +123,15 @@ PROJECT_INC_PATHS		+=	-I$(TOP)/drv/lcd1602-hal
 
 PROJECT_SOURCE			+=	lcd1602-hal.c					\
 							lcd1602-hal-test.c
+
+# KeyPad(Digital) driver
+VPATH					+=  $(TOP)/drv/keypad-d-hal
+
+PROJECT_INC_PATHS		+=	-I$(TOP)/drv/keypad-d-hal
+
+PROJECT_SOURCE			+=	keypad-d-hal.c					\
+							keypad-d-hal-test.c
+
 # General project files
 VPATH					+=	$(TOP)/src						\
                              
