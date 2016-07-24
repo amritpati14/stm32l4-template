@@ -115,6 +115,14 @@ PROJECT_INC_PATHS		+=	-I$(TOP)/lib/FreeRTOS-Plus-CLI
 
 PROJECT_SOURCE			+=	FreeRTOS_CLI.c
 
+
+# LCD1602 driver
+VPATH					+=  $(TOP)/drv/lcd1602-hal
+
+PROJECT_INC_PATHS		+=	-I$(TOP)/drv/lcd1602-hal
+
+PROJECT_SOURCE			+=	lcd1602-hal.c					\
+							lcd1602-hal-test.c
 # General project files
 VPATH					+=	$(TOP)/src						\
                              
