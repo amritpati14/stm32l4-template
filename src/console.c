@@ -19,13 +19,7 @@
 #include "console.h"
 
 /* Private typedef -----------------------------------------------------------*/
-#define DEBUG_printf(CONDITION, args...)	do												\
-									{														\
-										if(CONDITION)										\
-										{													\
-												printf( args );								\
-										}													\
-									}while(0)
+
 /* Private define ------------------------------------------------------------*/
 #define CONSOLE_TASK_PRIORITY					( tskIDLE_PRIORITY + 2UL )
 #define CONSOLE_TASK_STACK						( 2048/4 ) 							// 2048 bytes
