@@ -32,10 +32,32 @@
 
 /* Private variables ---------------------------------------------------------*/
 static Menu_t *m_currentMenu;
+static uint32_t m_wakeupEvent = 0;
 
 /* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
 
 /* Private functions ---------------------------------------------------------*/
+
+/**
+ *
+ * @param wakeupEvent
+ */
+void MENU_SetWakeupEvent(uint32_t wakeupEvent)
+{
+	m_wakeupEvent |= wakeupEvent;
+}
+
+/**
+ *
+ * @param wakeupEvent
+ */
+void MENU_ClrWakeupEvent(uint32_t wakeupEvent)
+{
+	taskENTER_CRITICAL();
+	m_wakeupEvent &= ~wakeupEvent;
+	taskEXIT_CRITICAL();
+}
 
 /**
  * @brief	switch menu
@@ -192,19 +214,45 @@ void MENU_InputProcess(void)
 
 }
 
+void MENU_Sleep(void)
+{
+	// Disable systick interrupt to prevent that wake up immediately
+	SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
+
+	KEY_EnableIRQ();
+
+	HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
+	SystemClock_Config();
+
+	KEY_DisableIRQ();
+
+	// Enable systick interrupt
+	SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
+
+}
+
 /**
  *
  * @param pvParameters
  */
 static void MENU_Task( void *pvParameters )
 {
+	MENU_SetWakeupEvent(MENU_WAKEUP_KEYPAD); // Enabel display after power
 
 	while(1)
 	{
-		LCD_Enable();
-		MENU_InputProcess();
-		LCD_Disable();
-		vTaskDelay(10000 / portTICK_PERIOD_MS);
+
+		// Check keypad event
+		if( m_wakeupEvent & MENU_WAKEUP_KEYPAD)
+		{
+			MENU_ClrWakeupEvent(MENU_WAKEUP_KEYPAD);
+
+			LCD_Enable();
+			MENU_InputProcess();
+			LCD_Disable();
+		}
+
+		MENU_Sleep();
 	}
 
 }

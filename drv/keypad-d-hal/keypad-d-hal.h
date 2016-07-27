@@ -40,6 +40,8 @@ typedef enum {
 /* Exported functions ------------------------------------------------------- */
 void KEY_Init(void);
 Key_t KEY_GetKey(void);
+void KEY_EnableIRQ(void);
+void KEY_DisableIRQ(void);
 
 void KEY_Test(void);
 

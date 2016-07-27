@@ -38,6 +38,8 @@
 
 #include "global.h"
 #include "console.h"
+#include "menu.h"
+
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
@@ -91,6 +93,34 @@ void USART2_IRQHandler(void)
 
   /* USER CODE END USART2_IRQn 1 */
 }
+
+void EXTI2_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_2);
+}
+
+void EXTI9_5_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_10);
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_12);
+	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_15);
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin
+			& (GPIO_PIN_2 | GPIO_PIN_7 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_15))
+	{
+		MENU_SetWakeupEvent(MENU_WAKEUP_KEYPAD);
+	}
+}
+
 
 /* USER CODE BEGIN 1 */
 
