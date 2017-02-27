@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
-  * @file    util.h
-  * @author  Dinow
+  * @file    menu.h
+  * @author  dinow
   * @version V0.0.1
-  * @date    2015-12-06
-  * @brief   
+  * @date    2016-07-24
+  * @brief
   ******************************************************************************
   * @attention
   *
@@ -13,26 +13,29 @@
   ******************************************************************************
   */
 
-#ifndef __INC_UTIL_H_
-#define __INC_UTIL_H_
+#ifndef __INC_MENU_H_
+#define __INC_MENU_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Includes ------------------------------------------------------------------*/
 
 /* Exported types ------------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
+#define MENU_WAKEUP_ALARM					0x0001
+#define MENU_WAKEUP_KEYPAD					0x0002
 
 /* Exported macro ------------------------------------------------------------*/
-#define DEBUG_printf(CONDITION, args...)	do												\
-									{														\
-										if(CONDITION)										\
-										{													\
-												printf( args );								\
-										}													\
-									}while(0)
-/* Exported functions ------------------------------------------------------- */
-uint32_t HexToInt(char *str, uint16_t len);
-uint32_t DecToInt(char *str, uint16_t len);
-void udelay(uint32_t us);
 
-#endif /* __INC_UTIL_H_ */
+/* Exported functions ------------------------------------------------------- */
+void MENU_Init(void);
+void MENU_SetWakeupEvent(uint32_t wakeupEvent);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
+#endif /* __INC_MENU_H_ */

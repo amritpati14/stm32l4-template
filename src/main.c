@@ -37,6 +37,7 @@
 #include "console.h"
 #include "lcd1602-hal.h"
 #include "keypad-d-hal.h"
+#include "menu.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -84,6 +85,7 @@ int main(void)
   CONSOLE_Init();
   LCD_Init();
   KEY_Init();
+  MENU_Init();
 
   /* USER CODE BEGIN 2 */
 

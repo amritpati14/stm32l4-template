@@ -134,6 +134,7 @@ PROJECT_SOURCE			+=	keypad-d-hal.c					\
 
 # General project files
 VPATH					+=	$(TOP)/src						\
+							$(TOP)/src/menu					\
                              
 PROJECT_INC_PATHS		+=	-I$(TOP)/inc					\
 
@@ -146,6 +147,8 @@ PROJECT_SOURCE			+=	main.c							\
 							systemcall.c					\
 							console.c						\
 							util.c							\
+							menu.c							\
+							mainmenu.c						\
 
 
 MCU_CC_FLAGS = $(CORTEX_M4_HWFP_CC_FLAGS)

@@ -71,12 +71,32 @@ Key_t KEY_GetKey(void)
 }
 
 /**
+ * @brief Enable EXTI of key
+ */
+void KEY_EnableIRQ(void)
+{
+	HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+}
+
+/**
+ * @brief Disable EXTI of key
+ */
+void KEY_DisableIRQ(void)
+{
+	HAL_NVIC_DisableIRQ(EXTI2_IRQn);
+	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+	HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+}
+
+/**
  * @brief Configure clock and pins for keypad
  */
 void KEY_Init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStruct;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
 
 	GPIO_InitStruct.Pin = KEY_UP_GPIO_PIN;
@@ -92,6 +112,11 @@ void KEY_Init(void)
 	GPIO_InitStruct.Pin = KEY_B_GPIO_PIN;
 	HAL_GPIO_Init(KEY_B_GPIO_PORT, &GPIO_InitStruct);
 
+	__HAL_RCC_SYSCFG_CLK_ENABLE();
+
+	HAL_NVIC_SetPriority(EXTI2_IRQn, 2, 0);
+	HAL_NVIC_SetPriority(EXTI9_5_IRQn, 2, 0);
+	HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
 
 #if SUPPORT_KEY_TEST_COMMAND
 	KEY_Test();
