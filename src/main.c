@@ -39,6 +39,7 @@
 #include "keypad-d-hal.h"
 #include "menu.h"
 #include "calendar.h"
+#include "water.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -88,6 +89,7 @@ int main(void)
   KEY_Init();
   MENU_Init();
   CALENDAR_Init();
+  WATER_Init();
 
   /* USER CODE BEGIN 2 */
 
