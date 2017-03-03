@@ -67,6 +67,12 @@ void MX_USART2_UART_Init(void)
   SET_BIT(huart2.Instance->CR1, USART_CR1_RXNEIE);
 }
 
+void MX_USART2_UART_DeInit(void)
+{
+	CLEAR_BIT(huart2.Instance->CR1, USART_CR1_RXNEIE);
+	HAL_UART_DeInit(&huart2);
+}
+
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
 {
 

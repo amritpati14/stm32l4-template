@@ -17,6 +17,7 @@
 #include "global.h"
 #include "keypad-d-hal.h"
 #include "menufunc.h"
+#include "usart.h"
 
 /* Private typedef -----------------------------------------------------------*/
 #define MENU_TASK_PRIORITY					( tskIDLE_PRIORITY + 1UL )
@@ -219,12 +220,14 @@ void MENU_Sleep(void)
 	// Disable systick interrupt to prevent that wake up immediately
 	SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
 
+	MX_USART2_UART_DeInit();
 	KEY_EnableIRQ();
 
 	HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
 	SystemClock_Config();
 
 	KEY_DisableIRQ();
+	MX_USART2_UART_Init();
 
 	// Enable systick interrupt
 	SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
