@@ -38,6 +38,7 @@
 #include "lcd1602-hal.h"
 #include "keypad-d-hal.h"
 #include "menu.h"
+#include "calendar.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -86,6 +87,7 @@ int main(void)
   LCD_Init();
   KEY_Init();
   MENU_Init();
+  CALENDAR_Init();
 
   /* USER CODE BEGIN 2 */
 
@@ -143,6 +145,13 @@ void SystemClock_Config(void)
 
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();

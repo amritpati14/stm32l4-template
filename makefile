@@ -18,6 +18,8 @@ PROJECT_SOURCE			+=	stm32l4xx_hal.c								\
 							stm32l4xx_hal_pwr_ex.c						\
 							stm32l4xx_hal_rcc.c							\
 							stm32l4xx_hal_rcc_ex.c						\
+							stm32l4xx_hal_rtc.c							\
+							stm32l4xx_hal_rtc_ex.c						\
 							stm32l4xx_hal_tim.c							\
 							stm32l4xx_hal_tim_ex.c						\
 							stm32l4xx_hal_uart.c						\
@@ -53,8 +55,6 @@ PROJECT_SOURCE			+=	stm32l4xx_hal.c								\
 #							stm32l4xx_hal_pcd_ex.c						\
 #							stm32l4xx_hal_qspi.c						\
 #							stm32l4xx_hal_rng.c							\
-#							stm32l4xx_hal_rtc.c							\
-#							stm32l4xx_hal_rtc_ex.c						\
 #							stm32l4xx_hal_sai.c							\
 #							stm32l4xx_hal_sd.c							\
 #							stm32l4xx_hal_smartcard.c					\
@@ -149,6 +149,7 @@ PROJECT_SOURCE			+=	main.c							\
 							util.c							\
 							menu.c							\
 							mainmenu.c						\
+							calendar.c						\
 
 
 MCU_CC_FLAGS = $(CORTEX_M4_HWFP_CC_FLAGS)
