@@ -1,9 +1,9 @@
 /**
   ******************************************************************************
-  * @file    global.h
+  * @file    calendar.h
   * @author  dinow
   * @version V0.0.1
-  * @date    2016-07-05
+  * @date    2017-03-01
   * @brief
   ******************************************************************************
   * @attention
@@ -13,25 +13,14 @@
   ******************************************************************************
   */
 
-#ifndef __INC_GLOBAL_H_
-#define __INC_GLOBAL_H_
+#ifndef __INC_CALENDAR_H_
+#define __INC_CALENDAR_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include <stdio.h>
-#include <string.h>
-#include "stm32l4xx_hal.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
-#include "FreeRTOS_CLI.h"
-
-#include "config.h"
-#include "type.h"
-#include "util.h"
 
 /* Exported types ------------------------------------------------------------*/
 
@@ -40,10 +29,10 @@ extern "C" {
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported functions ------------------------------------------------------- */
-extern void Error_Handler(void);
+void CALENDAR_Init(void);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* __INC_GLOBAL_H_ */
+#endif /* __INC_CALENDAR_H_ */
