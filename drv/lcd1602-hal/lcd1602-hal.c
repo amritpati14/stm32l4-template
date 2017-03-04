@@ -322,7 +322,7 @@ void LCD_Enable(void)
 	GPIO_InitStruct.Pin = LCD_RS_GPIO_PIN;
 	HAL_GPIO_Init(LCD_RS_GPIO_PORT, &GPIO_InitStruct);
 	GPIO_InitStruct.Pin = LCD_RW_GPIO_PIN;
-	HAL_GPIO_Init(LCD_RS_GPIO_PORT, &GPIO_InitStruct);
+	HAL_GPIO_Init(LCD_RW_GPIO_PORT, &GPIO_InitStruct);
 	GPIO_InitStruct.Pin = LCD_EN_GPIO_PIN;
 	HAL_GPIO_Init(LCD_EN_GPIO_PORT, &GPIO_InitStruct);
 
@@ -363,7 +363,7 @@ void LCD_Disable(void)
 	GPIO_InitStruct.Pin = LCD_RS_GPIO_PIN;
 	HAL_GPIO_Init(LCD_RS_GPIO_PORT, &GPIO_InitStruct);
 	GPIO_InitStruct.Pin = LCD_RW_GPIO_PIN;
-	HAL_GPIO_Init(LCD_RS_GPIO_PORT, &GPIO_InitStruct);
+	HAL_GPIO_Init(LCD_RW_GPIO_PORT, &GPIO_InitStruct);
 	GPIO_InitStruct.Pin = LCD_EN_GPIO_PIN;
 	HAL_GPIO_Init(LCD_EN_GPIO_PORT, &GPIO_InitStruct);
 
