@@ -148,9 +148,10 @@ PROJECT_SOURCE			+=	main.c							\
 							console.c						\
 							util.c							\
 							menu.c							\
-							menufont.c							\
+							menufont.c						\
 							mainmenu.c						\
 							infomenu.c						\
+							watermenu.c						\
 							calendar.c						\
 							water.c							\
 

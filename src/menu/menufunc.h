@@ -48,6 +48,7 @@ typedef struct
 /* Exported module variables -------------------------------------------------*/
 extern Menu_t mainMenu;
 extern Menu_t infoMenu;
+extern Menu_t waterMenu;
 
 // Custom Character
 extern char fUpArrow[8];

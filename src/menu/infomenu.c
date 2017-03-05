@@ -240,33 +240,38 @@ void infoMenu_Up(void)
  */
 void infoMenu_Down(void)
 {
-	if (!m_setClock) return;
-
-	switch (m_curPos)
+	if (m_setClock)
 	{
-		case CURSOR_POS_HOUR:
-			m_curTime.Hours++;
-			if (m_curTime.Hours >= 24)
-				m_curTime.Hours -= 24;
-			break;
+		switch (m_curPos)
+		{
+			case CURSOR_POS_HOUR:
+				m_curTime.Hours++;
+				if (m_curTime.Hours >= 24)
+					m_curTime.Hours -= 24;
+				break;
 
-		case CURSOR_POS_MIN:
-			m_curTime.Minutes++;
-			if (m_curTime.Minutes >= 60)
-				m_curTime.Minutes -= 60;
-			break;
+			case CURSOR_POS_MIN:
+				m_curTime.Minutes++;
+				if (m_curTime.Minutes >= 60)
+					m_curTime.Minutes -= 60;
+				break;
 
-		case CURSOR_POS_SEC:
-			m_curTime.Seconds++;
-			if (m_curTime.Seconds >= 60)
-				m_curTime.Seconds -= 60;
-			break;
+			case CURSOR_POS_SEC:
+				m_curTime.Seconds++;
+				if (m_curTime.Seconds >= 60)
+					m_curTime.Seconds -= 60;
+				break;
 
-		default:
-			break;
+			default:
+				break;
+		}
+
+		infoMenu_UpdataTime();
 	}
-
-	infoMenu_UpdataTime();
+	else
+	{
+		MENU_SwitchMenu(&waterMenu);
+	}
 }
 
 Menu_t infoMenu =
