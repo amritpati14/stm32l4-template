@@ -20,8 +20,7 @@
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
-#define DBG_CONSOLE								TRUE
-
+#define SUPPORT_RTC_TEST_COMMAND			0 // debug command for FreeRTOS-CLI
 
 /* Private macro -------------------------------------------------------------*/
 
@@ -31,6 +30,8 @@ RTC_HandleTypeDef hrtc;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private functions ---------------------------------------------------------*/
+
+#if SUPPORT_RTC_TEST_COMMAND
 /**
  * @brief Show RTC time
  * @param pcWriteBuffer
@@ -38,7 +39,6 @@ RTC_HandleTypeDef hrtc;
  * @param pcCommandString
  * @return
  */
-
 static BaseType_t CALENDAR_GetTimeCommand(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString)
 {
 	RTC_TimeTypeDef sTime;
@@ -207,6 +207,7 @@ static const CLI_Command_Definition_t xCalendarSetAlarm =
 	CALENDAR_SetAlarmCommand, /* The function to run. */
 	3 /* No parameters are expected. */
 };
+#endif
 
 /**
  * @brief Initialize RTC
@@ -233,17 +234,16 @@ void CALENDAR_Init(void)
 	__HAL_RCC_SYSCFG_CLK_ENABLE();
 	HAL_NVIC_SetPriority(RTC_Alarm_IRQn, 2, 0);
 	HAL_NVIC_EnableIRQ(RTC_Alarm_IRQn);
-
+#if SUPPORT_RTC_TEST_COMMAND
 	FreeRTOS_CLIRegisterCommand( &xCalendarGetTime );
 	FreeRTOS_CLIRegisterCommand( &xCalendarSetTime );
 	FreeRTOS_CLIRegisterCommand( &xCalendarGetAlarm );
 	FreeRTOS_CLIRegisterCommand( &xCalendarSetAlarm );
+#endif
 }
 
 void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
 {
-	DEBUG_printf(DBG_CONSOLE, "\n%s\n", __FUNCTION__);
-
 	if (hrtc->Instance == RTC)
 	{
 		/* USER CODE BEGIN RTC_MspInit 0 */
@@ -262,7 +262,6 @@ void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
 
 void HAL_RTC_MspDeInit(RTC_HandleTypeDef* hrtc)
 {
-
 	if (hrtc->Instance == RTC)
 	{
 		/* USER CODE BEGIN RTC_MspDeInit 0 */
