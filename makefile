@@ -150,6 +150,7 @@ PROJECT_SOURCE			+=	main.c							\
 							menu.c							\
 							mainmenu.c						\
 							calendar.c						\
+							water.c							\
 
 
 MCU_CC_FLAGS = $(CORTEX_M4_HWFP_CC_FLAGS)
