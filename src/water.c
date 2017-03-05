@@ -15,6 +15,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "global.h"
+#include "water.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -41,6 +42,13 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
+WATER_ControllerTypeDef m_Controller[MAX_WATER_CONTROLLER_NUM] =
+{
+	{ 7, 0, 10, 200},
+	{ 7, 10, 0, 200},
+	{ 7, 20, 0, 200},
+	{ 7, 30, 0, 200},
+};
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -106,6 +114,22 @@ static const CLI_Command_Definition_t xWaterSet =
 	2
 };
 #endif
+
+/**
+ * @brief Get watering setting of controller No.x
+ * @param num
+ * @param sController
+ */
+void WATER_GetController(uint8_t num, WATER_ControllerTypeDef *sController)
+{
+	if( num < MAX_WATER_CONTROLLER_NUM )
+	{
+		sController->Hour =  m_Controller[num].Hour;
+		sController->Minutes =  m_Controller[num].Minutes;
+		sController->Period =  m_Controller[num].Period;
+		sController->Moisture =  m_Controller[num].Moisture;
+	}
+}
 
 /**
  * @brief Configure all pin

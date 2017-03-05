@@ -80,13 +80,13 @@ void infoMenu_Open(void)
 	LCD_Clear();
 	LCD_SetLoc(1,0);
 
-	LCD_Print("Time ");
+	LCD_Print(" Time");
 
 	LCD_SetLoc(0,1);
 	LCD_Put(CHAR_DOWN_ARROW);
 
 	// TODO: Check next alarm
-	LCD_Print("Next  <1> 08:30");
+	LCD_Print(" Next <1> 08:30");
 
 	LCD_Display(ENABLE);
 }
