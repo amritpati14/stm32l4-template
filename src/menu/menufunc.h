@@ -49,6 +49,10 @@ typedef struct
 extern Menu_t mainMenu;
 extern Menu_t infoMenu;
 
+// Custom Character
+extern char fUpArrow[8];
+extern char fDownArrow[8];
+
 /* Exported functions ------------------------------------------------------- */
 void MENU_SwitchMenu(Menu_t *newMenu);
 

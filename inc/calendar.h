@@ -29,6 +29,8 @@ extern "C" {
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported functions ------------------------------------------------------- */
+extern RTC_HandleTypeDef hrtc;
+
 void CALENDAR_Init(void);
 
 #ifdef __cplusplus
