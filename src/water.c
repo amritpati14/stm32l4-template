@@ -22,7 +22,7 @@
 #define WATER_TASK_PRIORITY					( tskIDLE_PRIORITY + 3UL )
 #define WATER_TASK_STACK					( 256/4 ) 							// 2048 bytes
 
-#define SUPPORT_WATER_TEST_COMMAND				1 // debug command for FreeRTOS-CLI
+#define SUPPORT_WATER_TEST_COMMAND				0 // debug command for FreeRTOS-CLI
 
 #define WATER_PIN_0_PORT						GPIOB
 #define WATER_PIN_0_NUM							GPIO_PIN_11
@@ -131,6 +131,32 @@ void WATER_Enable(void)
 	HAL_GPIO_WritePin(WATER_PIN_1, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(WATER_PIN_2, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(WATER_PIN_3, GPIO_PIN_RESET);
+}
+
+/**
+ * @brief configure all pins to analog mode for power consumption
+ */
+void WATER_Disable(void)
+{
+	HAL_GPIO_WritePin(WATER_PIN_0, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(WATER_PIN_1, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(WATER_PIN_2, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(WATER_PIN_3, GPIO_PIN_RESET);
+
+	GPIO_InitTypeDef GPIO_InitStruct;
+
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+
+	GPIO_InitStruct.Pin = WATER_PIN_0_NUM;
+	HAL_GPIO_Init(WATER_PIN_0_PORT, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = WATER_PIN_1_NUM;
+	HAL_GPIO_Init(WATER_PIN_1_PORT, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = WATER_PIN_2_NUM;
+	HAL_GPIO_Init(WATER_PIN_2_PORT, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = WATER_PIN_3_NUM;
+	HAL_GPIO_Init(WATER_PIN_3_PORT, &GPIO_InitStruct);
 }
 
 /**

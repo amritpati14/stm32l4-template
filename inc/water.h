@@ -30,6 +30,8 @@ extern "C" {
 
 /* Exported functions ------------------------------------------------------- */
 void WATER_Init(void);
+void WATER_Enable(void);
+void WATER_Disable(void);
 
 #ifdef __cplusplus
 }
