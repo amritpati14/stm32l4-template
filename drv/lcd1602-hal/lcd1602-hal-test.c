@@ -24,6 +24,16 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
+char customChar[8] = {
+	0b00100,
+	0b01110,
+	0b10101,
+	0b00100,
+	0b00100,
+	0b00100,
+	0b00100,
+	0b00000
+};
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -240,6 +250,39 @@ static const CLI_Command_Definition_t xLcdLoc =
  * @param	pcCommandString
  * @return
  */
+static BaseType_t LCD_PutCommand(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString)
+{
+	const char *parameterPtr;
+	int32_t paramterLen;
+	uint32_t num;
+
+	parameterPtr = FreeRTOS_CLIGetParameter(pcCommandString, 1, &paramterLen);
+
+	if (paramterLen > 3 && parameterPtr[0] == '0' && parameterPtr[1] == 'x')
+		num = HexToInt((char *) parameterPtr, paramterLen);
+	else
+		num = DecToInt((char *) parameterPtr, paramterLen);
+
+	LCD_Put(num);
+
+	sprintf(pcWriteBuffer, "\n");
+	return pdFALSE;
+}
+
+static const CLI_Command_Definition_t xLcdPut =
+{
+	"lcd-put",
+	"lcd-put <num> :\n    put char of ascii <num>\n",
+	LCD_PutCommand,
+	1
+};
+
+/**
+ * @param	pcWriteBuffer
+ * @param	xWriteBufferLen
+ * @param	pcCommandString
+ * @return
+ */
 static BaseType_t LCD_PrintCommand(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString)
 {
 	const char *parameterPtr;
@@ -271,6 +314,8 @@ static const CLI_Command_Definition_t xLcdPrint =
  */
 void LCD_Test(void)
 {
+	LCD_CreateFont(1, customChar);
+	LCD_SetLoc(0, 0);
 	FreeRTOS_CLIRegisterCommand(&xLcdEnable);
 	FreeRTOS_CLIRegisterCommand(&xLcdDisable);
 	FreeRTOS_CLIRegisterCommand(&xLcdClear);
@@ -278,5 +323,6 @@ void LCD_Test(void)
 	FreeRTOS_CLIRegisterCommand(&xLcdCursor);
 	FreeRTOS_CLIRegisterCommand(&xLcdMove);
 	FreeRTOS_CLIRegisterCommand(&xLcdLoc);
+	FreeRTOS_CLIRegisterCommand(&xLcdPut);
 	FreeRTOS_CLIRegisterCommand(&xLcdPrint);
 }

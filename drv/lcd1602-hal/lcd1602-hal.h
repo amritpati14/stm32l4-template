@@ -27,6 +27,7 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 
 /* Exported macro ------------------------------------------------------------*/
+#define LCD_Put(c)			LCD_WriteData(c)
 
 /* Exported functions ------------------------------------------------------- */
 
@@ -44,6 +45,7 @@ void LCD_CursorMoveRight(void);
 void LCD_CursorMoveLeft(void);
 void LCD_SetLoc(uint8_t x, uint8_t y);
 void LCD_WriteData(unsigned char data);
+void LCD_CreateFont(uint8_t loc, char *font);
 void LCD_Print(char *str);
 void LCD_Enable(void);
 void LCD_Disable(void);

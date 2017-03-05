@@ -132,6 +132,19 @@ void LCD_WriteData(unsigned char data)
 	LCD_WriteNibble(data & 0x0f);
 	udelay(LCD_INSTRUCTION_DELAY);
 }
+/**
+ * @brief	Write data to CGRAM
+ * @param	addr
+ */
+void LCD_CreateFont(uint8_t loc, char *font)
+{
+	if (loc >= 8) return;
+	LCD_WriteInstruction(HD44780_CGRAM_SET | (loc << 3));
+
+	int i;
+	for (i = 0; i < 8; i++)
+		LCD_WriteData(font[i] & 0x1f);
+}
 
 /**
  * @brief	Clears display and returns cursor to the home position (address 0).
