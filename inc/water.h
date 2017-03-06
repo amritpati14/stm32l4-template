@@ -42,6 +42,7 @@ void WATER_Enable(void);
 void WATER_Disable(void);
 void WATER_GetController(uint8_t num, WATER_ControllerTypeDef *sController);
 void WATER_SetController(uint8_t num, WATER_ControllerTypeDef *sController);
+int16_t WATER_GetNextActiveController(void);
 
 #ifdef __cplusplus
 }

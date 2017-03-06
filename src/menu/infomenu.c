@@ -17,6 +17,7 @@
 #include "global.h"
 #include "menufunc.h"
 #include "calendar.h"
+#include "water.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -61,6 +62,25 @@ void infoMenu_Redraw(void)
 
 		LCD_SetLoc(8, 0);
 		LCD_Print(buf);
+
+		int nextController;
+		nextController = WATER_GetNextActiveController();
+
+		LCD_SetLoc(2,1);
+
+		if( nextController == -1 )
+		{
+			LCD_SetLoc(2,1);
+			LCD_Print("Next None     ");
+		}
+		else
+		{
+			WATER_ControllerTypeDef controller;
+			WATER_GetController(nextController, &controller);
+
+			sprintf(buf, "Next <%d> %2d:%02d", nextController, controller.Hour, controller.Minutes);
+			LCD_Print(buf);
+		}
 	}
 }
 
@@ -84,9 +104,6 @@ void infoMenu_Open(void)
 
 	LCD_SetLoc(0,1);
 	LCD_Put(CHAR_DOWN_ARROW);
-
-	// TODO: Check next alarm
-	LCD_Print(" Next <1> 08:30");
 
 	LCD_Display(ENABLE);
 }

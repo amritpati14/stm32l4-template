@@ -16,6 +16,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "global.h"
 #include "water.h"
+#include "calendar.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -116,6 +117,46 @@ static const CLI_Command_Definition_t xWaterSet =
 #endif
 
 /**
+ *
+ * @return
+ */
+int16_t WATER_GetNextActiveController(void)
+{
+	RTC_TimeTypeDef sTime;
+	HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+
+	RTC_DateTypeDef sDate;
+	HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+
+
+	int16_t ret = -1;
+	int32_t minTimeDiff = 0x7fffffff;
+	int32_t timeDiff;
+	int32_t curTime;
+
+	curTime = sTime.Hours * 60 * 60 + sTime.Minutes * 60 + sTime.Seconds;
+
+	int i;
+	for(i = 0; i < MAX_WATER_CONTROLLER_NUM; i++)
+	{
+		if (m_Controller[i].Period == 0) continue;
+
+		timeDiff = m_Controller[i].Hour * 60 * 60 + m_Controller[i].Minutes * 60 - curTime;
+
+		if (timeDiff < 0) timeDiff += 24 * 60 * 60;
+
+		if ( timeDiff < minTimeDiff)
+		{
+			minTimeDiff = timeDiff;
+			ret = i;
+		}
+	}
+
+	return ret;
+}
+
+
+/**
  * @brief Get watering setting of controller No.x
  * @param num
  * @param sController
@@ -145,6 +186,8 @@ void WATER_SetController(uint8_t num, WATER_ControllerTypeDef *sController)
 		m_Controller[num].Period = sController->Period;
 		m_Controller[num].Moisture = sController->Moisture;
 	}
+
+	// TODO: find next watering controller and set alarm
 }
 /**
  * @brief Configure all pin
