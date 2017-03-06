@@ -122,15 +122,30 @@ static const CLI_Command_Definition_t xWaterSet =
  */
 void WATER_GetController(uint8_t num, WATER_ControllerTypeDef *sController)
 {
-	if( num < MAX_WATER_CONTROLLER_NUM )
+	if (num < MAX_WATER_CONTROLLER_NUM)
 	{
-		sController->Hour =  m_Controller[num].Hour;
-		sController->Minutes =  m_Controller[num].Minutes;
-		sController->Period =  m_Controller[num].Period;
-		sController->Moisture =  m_Controller[num].Moisture;
+		sController->Hour = m_Controller[num].Hour;
+		sController->Minutes = m_Controller[num].Minutes;
+		sController->Period = m_Controller[num].Period;
+		sController->Moisture = m_Controller[num].Moisture;
 	}
 }
 
+/**
+ * @brief Set watering setting of controller No.x
+ * @param num
+ * @param sController
+ */
+void WATER_SetController(uint8_t num, WATER_ControllerTypeDef *sController)
+{
+	if( num < MAX_WATER_CONTROLLER_NUM )
+	{
+		m_Controller[num].Hour = sController->Hour;
+		m_Controller[num].Minutes = sController->Minutes;
+		m_Controller[num].Period = sController->Period;
+		m_Controller[num].Moisture = sController->Moisture;
+	}
+}
 /**
  * @brief Configure all pin
  */
