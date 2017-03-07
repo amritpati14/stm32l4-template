@@ -43,9 +43,10 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
+int16_t m_nextActiveController = -1;
 WATER_ControllerTypeDef m_Controller[MAX_WATER_CONTROLLER_NUM] =
 {
-	{ 7, 0, 10, 200},
+	{ 7, 0, 0, 200},
 	{ 7, 10, 0, 200},
 	{ 7, 20, 0, 200},
 	{ 7, 30, 0, 200},
@@ -120,7 +121,7 @@ static const CLI_Command_Definition_t xWaterSet =
  *
  * @return
  */
-int16_t WATER_GetNextActiveController(void)
+int16_t WATER_FindNextActiveController(void)
 {
 	RTC_TimeTypeDef sTime;
 	HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
@@ -155,6 +156,43 @@ int16_t WATER_GetNextActiveController(void)
 	return ret;
 }
 
+/**
+ * @brief Update alarm when clock is changed or alarm is actived
+ */
+void WATER_UpdateNextActiveController(void)
+{
+	m_nextActiveController = WATER_FindNextActiveController();
+
+	HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
+
+	if( m_nextActiveController != -1 )
+	{
+		RTC_AlarmTypeDef sAlarm;
+		sAlarm.AlarmTime.Hours = m_Controller[m_nextActiveController].Hour;
+		sAlarm.AlarmTime.Minutes = m_Controller[m_nextActiveController].Minutes;
+		sAlarm.AlarmTime.Seconds = 0;
+		sAlarm.AlarmTime.SubSeconds = 0;
+		sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+		sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
+		sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY;
+		sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+		sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
+		sAlarm.AlarmDateWeekDay = RTC_WEEKDAY_MONDAY;
+		sAlarm.Alarm = RTC_ALARM_A;
+
+		HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN);
+	}
+}
+
+/**
+ *
+ * @return
+ */
+int16_t WATER_GetNextActiveController(void)
+{
+	return m_nextActiveController;
+}
+
 
 /**
  * @brief Get watering setting of controller No.x
@@ -187,7 +225,7 @@ void WATER_SetController(uint8_t num, WATER_ControllerTypeDef *sController)
 		m_Controller[num].Moisture = sController->Moisture;
 	}
 
-	// TODO: find next watering controller and set alarm
+	WATER_UpdateNextActiveController();
 }
 /**
  * @brief Configure all pin
