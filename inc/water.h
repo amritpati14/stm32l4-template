@@ -23,8 +23,16 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 
 /* Exported types ------------------------------------------------------------*/
+typedef struct
+{
+	uint8_t Hour;
+	uint8_t Minutes;
+	uint8_t Period;
+	uint8_t Moisture;
+} WATER_ControllerTypeDef;
 
 /* Exported constants --------------------------------------------------------*/
+#define MAX_WATER_CONTROLLER_NUM				4
 
 /* Exported macro ------------------------------------------------------------*/
 
@@ -32,6 +40,10 @@ extern "C" {
 void WATER_Init(void);
 void WATER_Enable(void);
 void WATER_Disable(void);
+void WATER_GetController(uint8_t num, WATER_ControllerTypeDef *sController);
+void WATER_SetController(uint8_t num, WATER_ControllerTypeDef *sController);
+int16_t WATER_GetNextActiveController(void);
+void WATER_UpdateNextActiveController(void);
 
 #ifdef __cplusplus
 }

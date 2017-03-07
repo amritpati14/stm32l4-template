@@ -17,6 +17,7 @@
 #include "global.h"
 #include "menufunc.h"
 #include "calendar.h"
+#include "water.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -61,6 +62,25 @@ void infoMenu_Redraw(void)
 
 		LCD_SetLoc(8, 0);
 		LCD_Print(buf);
+
+		int nextController;
+		nextController = WATER_GetNextActiveController();
+
+		LCD_SetLoc(2,1);
+
+		if( nextController == -1 )
+		{
+			LCD_SetLoc(2,1);
+			LCD_Print("Next None     ");
+		}
+		else
+		{
+			WATER_ControllerTypeDef controller;
+			WATER_GetController(nextController, &controller);
+
+			sprintf(buf, "Next <%d> %2d:%02d", nextController, controller.Hour, controller.Minutes);
+			LCD_Print(buf);
+		}
 	}
 }
 
@@ -80,13 +100,10 @@ void infoMenu_Open(void)
 	LCD_Clear();
 	LCD_SetLoc(1,0);
 
-	LCD_Print("Time ");
+	LCD_Print(" Time");
 
 	LCD_SetLoc(0,1);
 	LCD_Put(CHAR_DOWN_ARROW);
-
-	// TODO: Check next alarm
-	LCD_Print("Next  <1> 08:30");
 
 	LCD_Display(ENABLE);
 }
@@ -208,43 +225,6 @@ void infoMenu_Up(void)
 	switch (m_curPos)
 	{
 		case CURSOR_POS_HOUR:
-			if (m_curTime.Hours == 0)
-				m_curTime.Hours = 23;
-			else
-				m_curTime.Hours--;
-			break;
-
-		case CURSOR_POS_MIN:
-			if (m_curTime.Minutes == 0)
-				m_curTime.Minutes = 59;
-			else
-				m_curTime.Minutes--;
-			break;
-
-		case CURSOR_POS_SEC:
-			if (m_curTime.Seconds == 0)
-				m_curTime.Seconds = 59;
-			else
-				m_curTime.Seconds--;
-			break;
-
-		default:
-			break;
-	}
-
-	infoMenu_UpdataTime();
-}
-
-/**
- *
- */
-void infoMenu_Down(void)
-{
-	if (!m_setClock) return;
-
-	switch (m_curPos)
-	{
-		case CURSOR_POS_HOUR:
 			m_curTime.Hours++;
 			if (m_curTime.Hours >= 24)
 				m_curTime.Hours -= 24;
@@ -267,6 +247,48 @@ void infoMenu_Down(void)
 	}
 
 	infoMenu_UpdataTime();
+}
+
+/**
+ *
+ */
+void infoMenu_Down(void)
+{
+	if (m_setClock)
+	{
+		switch (m_curPos)
+		{
+			case CURSOR_POS_HOUR:
+				if (m_curTime.Hours == 0)
+					m_curTime.Hours = 23;
+				else
+					m_curTime.Hours--;
+				break;
+
+			case CURSOR_POS_MIN:
+				if (m_curTime.Minutes == 0)
+					m_curTime.Minutes = 59;
+				else
+					m_curTime.Minutes--;
+				break;
+
+			case CURSOR_POS_SEC:
+				if (m_curTime.Seconds == 0)
+					m_curTime.Seconds = 59;
+				else
+					m_curTime.Seconds--;
+				break;
+
+			default:
+				break;
+		}
+
+		infoMenu_UpdataTime();
+	}
+	else
+	{
+		MENU_SwitchMenu(&waterMenu);
+	}
 }
 
 Menu_t infoMenu =

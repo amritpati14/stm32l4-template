@@ -15,6 +15,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "global.h"
+#include "water.h"
+#include "calendar.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -41,6 +43,14 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
+int16_t m_nextActiveController = -1;
+WATER_ControllerTypeDef m_Controller[MAX_WATER_CONTROLLER_NUM] =
+{
+	{ 7, 0, 0, 200},
+	{ 7, 10, 0, 200},
+	{ 7, 20, 0, 200},
+	{ 7, 30, 0, 200},
+};
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -107,6 +117,116 @@ static const CLI_Command_Definition_t xWaterSet =
 };
 #endif
 
+/**
+ *
+ * @return
+ */
+int16_t WATER_FindNextActiveController(void)
+{
+	RTC_TimeTypeDef sTime;
+	HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+
+	RTC_DateTypeDef sDate;
+	HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+
+
+	int16_t ret = -1;
+	int32_t minTimeDiff = 0x7fffffff;
+	int32_t timeDiff;
+	int32_t curTime;
+
+	curTime = sTime.Hours * 60 * 60 + sTime.Minutes * 60 + sTime.Seconds;
+
+	int i;
+	for(i = 0; i < MAX_WATER_CONTROLLER_NUM; i++)
+	{
+		if (m_Controller[i].Period == 0) continue;
+
+		timeDiff = m_Controller[i].Hour * 60 * 60 + m_Controller[i].Minutes * 60 - curTime;
+
+		if (timeDiff < 0) timeDiff += 24 * 60 * 60;
+
+		if ( timeDiff < minTimeDiff)
+		{
+			minTimeDiff = timeDiff;
+			ret = i;
+		}
+	}
+
+	return ret;
+}
+
+/**
+ * @brief Update alarm when clock is changed or alarm is actived
+ */
+void WATER_UpdateNextActiveController(void)
+{
+	m_nextActiveController = WATER_FindNextActiveController();
+
+	HAL_RTC_DeactivateAlarm(&hrtc, RTC_ALARM_A);
+
+	if( m_nextActiveController != -1 )
+	{
+		RTC_AlarmTypeDef sAlarm;
+		sAlarm.AlarmTime.Hours = m_Controller[m_nextActiveController].Hour;
+		sAlarm.AlarmTime.Minutes = m_Controller[m_nextActiveController].Minutes;
+		sAlarm.AlarmTime.Seconds = 0;
+		sAlarm.AlarmTime.SubSeconds = 0;
+		sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+		sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
+		sAlarm.AlarmMask = RTC_ALARMMASK_DATEWEEKDAY;
+		sAlarm.AlarmSubSecondMask = RTC_ALARMSUBSECONDMASK_ALL;
+		sAlarm.AlarmDateWeekDaySel = RTC_ALARMDATEWEEKDAYSEL_WEEKDAY;
+		sAlarm.AlarmDateWeekDay = RTC_WEEKDAY_MONDAY;
+		sAlarm.Alarm = RTC_ALARM_A;
+
+		HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN);
+	}
+}
+
+/**
+ *
+ * @return
+ */
+int16_t WATER_GetNextActiveController(void)
+{
+	return m_nextActiveController;
+}
+
+
+/**
+ * @brief Get watering setting of controller No.x
+ * @param num
+ * @param sController
+ */
+void WATER_GetController(uint8_t num, WATER_ControllerTypeDef *sController)
+{
+	if (num < MAX_WATER_CONTROLLER_NUM)
+	{
+		sController->Hour = m_Controller[num].Hour;
+		sController->Minutes = m_Controller[num].Minutes;
+		sController->Period = m_Controller[num].Period;
+		sController->Moisture = m_Controller[num].Moisture;
+	}
+}
+
+/**
+ * @brief Set watering setting of controller No.x
+ * @param num
+ * @param sController
+ */
+void WATER_SetController(uint8_t num, WATER_ControllerTypeDef *sController)
+{
+	if( num < MAX_WATER_CONTROLLER_NUM )
+	{
+		m_Controller[num].Hour = sController->Hour;
+		m_Controller[num].Minutes = sController->Minutes;
+		m_Controller[num].Period = sController->Period;
+		m_Controller[num].Moisture = sController->Moisture;
+	}
+
+	WATER_UpdateNextActiveController();
+}
 /**
  * @brief Configure all pin
  */
