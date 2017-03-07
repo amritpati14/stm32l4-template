@@ -170,29 +170,29 @@ void waterMenu_Up(void)
 		switch (m_curPos)
 		{
 			case CURSOR_POS_HOUR:
-				if( m_curController.Hour == 0 )
-					m_curController.Hour = 23;
+				if( m_curController.Hour == 23 )
+					m_curController.Hour = 0;
 				else
-					m_curController.Hour--;
+					m_curController.Hour++;
 				break;
 
 			case CURSOR_POS_MIN:
-				if( m_curController.Minutes == 0 )
-					m_curController.Minutes = 59;
+				if( m_curController.Minutes == 59 )
+					m_curController.Minutes = 0;
 				else
-					m_curController.Minutes--;
+					m_curController.Minutes++;
 				break;
 
 			case CURSOR_POS_PERIOD:
-				if (m_curController.Period > 0)
-					m_curController.Period--;
+				if (m_curController.Period < 30)
+					m_curController.Period++;
 				break;
 
 			case CURSOR_POS_MOISTURE:
-				if (m_curController.Moisture >= 10)
-					m_curController.Moisture -= 10;
+				if (m_curController.Moisture < 240)
+					m_curController.Moisture += 10;
 				else
-					m_curController.Moisture = 0;
+					m_curController.Moisture = 250;
 				break;
 		}
 
@@ -223,29 +223,29 @@ void waterMenu_Down(void)
 		switch (m_curPos)
 		{
 			case CURSOR_POS_HOUR:
-				if( m_curController.Hour == 23 )
-					m_curController.Hour = 0;
+				if( m_curController.Hour == 0 )
+					m_curController.Hour = 23;
 				else
-					m_curController.Hour++;
+					m_curController.Hour--;
 				break;
 
 			case CURSOR_POS_MIN:
-				if( m_curController.Minutes == 59 )
-					m_curController.Minutes = 0;
+				if( m_curController.Minutes == 0 )
+					m_curController.Minutes = 59;
 				else
-					m_curController.Minutes++;
+					m_curController.Minutes--;
 				break;
 
 			case CURSOR_POS_PERIOD:
-				if (m_curController.Period < 30)
-					m_curController.Period++;
+				if (m_curController.Period > 0)
+					m_curController.Period--;
 				break;
 
 			case CURSOR_POS_MOISTURE:
-				if (m_curController.Moisture < 240)
-					m_curController.Moisture += 10;
+				if (m_curController.Moisture >= 10)
+					m_curController.Moisture -= 10;
 				else
-					m_curController.Moisture = 250;
+					m_curController.Moisture = 0;
 				break;
 		}
 

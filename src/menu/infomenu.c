@@ -225,24 +225,21 @@ void infoMenu_Up(void)
 	switch (m_curPos)
 	{
 		case CURSOR_POS_HOUR:
-			if (m_curTime.Hours == 0)
-				m_curTime.Hours = 23;
-			else
-				m_curTime.Hours--;
+			m_curTime.Hours++;
+			if (m_curTime.Hours >= 24)
+				m_curTime.Hours -= 24;
 			break;
 
 		case CURSOR_POS_MIN:
-			if (m_curTime.Minutes == 0)
-				m_curTime.Minutes = 59;
-			else
-				m_curTime.Minutes--;
+			m_curTime.Minutes++;
+			if (m_curTime.Minutes >= 60)
+				m_curTime.Minutes -= 60;
 			break;
 
 		case CURSOR_POS_SEC:
-			if (m_curTime.Seconds == 0)
-				m_curTime.Seconds = 59;
-			else
-				m_curTime.Seconds--;
+			m_curTime.Seconds++;
+			if (m_curTime.Seconds >= 60)
+				m_curTime.Seconds -= 60;
 			break;
 
 		default:
@@ -262,21 +259,24 @@ void infoMenu_Down(void)
 		switch (m_curPos)
 		{
 			case CURSOR_POS_HOUR:
-				m_curTime.Hours++;
-				if (m_curTime.Hours >= 24)
-					m_curTime.Hours -= 24;
+				if (m_curTime.Hours == 0)
+					m_curTime.Hours = 23;
+				else
+					m_curTime.Hours--;
 				break;
 
 			case CURSOR_POS_MIN:
-				m_curTime.Minutes++;
-				if (m_curTime.Minutes >= 60)
-					m_curTime.Minutes -= 60;
+				if (m_curTime.Minutes == 0)
+					m_curTime.Minutes = 59;
+				else
+					m_curTime.Minutes--;
 				break;
 
 			case CURSOR_POS_SEC:
-				m_curTime.Seconds++;
-				if (m_curTime.Seconds >= 60)
-					m_curTime.Seconds -= 60;
+				if (m_curTime.Seconds == 0)
+					m_curTime.Seconds = 59;
+				else
+					m_curTime.Seconds--;
 				break;
 
 			default:
