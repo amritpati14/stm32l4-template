@@ -21,11 +21,13 @@
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
-#define WATER_TASK_PRIORITY					( tskIDLE_PRIORITY + 3UL )
-#define WATER_TASK_STACK					( 256/4 ) 							// 2048 bytes
+#define WATER_TASK_PRIORITY						( tskIDLE_PRIORITY + 4UL )
+#define WATER_TASK_STACK						( 2048/4 ) 							// 2048 bytes
 
-#define SUPPORT_WATER_TEST_COMMAND				0 // debug command for FreeRTOS-CLI
+#define SUPPORT_WATER_TEST_COMMAND				1 // debug command for FreeRTOS-CLI
+#define DBG_WATER								1
 
+// Pin mapping
 #define WATER_PIN_0_PORT						GPIOB
 #define WATER_PIN_0_NUM							GPIO_PIN_11
 #define WATER_PIN_1_PORT						GPIOB
@@ -40,6 +42,8 @@
 #define WATER_PIN_2								WATER_PIN_2_PORT, WATER_PIN_2_NUM
 #define WATER_PIN_3								WATER_PIN_3_PORT, WATER_PIN_3_NUM
 
+#define CONTROLLER_QUEUE_SIZE					8
+
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -52,70 +56,12 @@ WATER_ControllerTypeDef m_Controller[MAX_WATER_CONTROLLER_NUM] =
 	{ 7, 30, 0, 200},
 };
 
+static SemaphoreHandle_t m_waterLock;
+static QueueHandle_t m_cotrollerQueue;
+
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private functions ---------------------------------------------------------*/
-#if SUPPORT_WATER_TEST_COMMAND
-/**
- * @param	pcWriteBuffer
- * @param	xWriteBufferLen
- * @param	pcCommandString
- * @return
- */
-static BaseType_t WATER_SetCommand(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString)
-{
-	const char *parameterPtr;
-	int32_t paramterLen;
-	uint32_t num, value;
-
-	parameterPtr = FreeRTOS_CLIGetParameter(pcCommandString, 1, &paramterLen);
-	num = DecToInt((char *) parameterPtr, paramterLen);
-
-	parameterPtr = FreeRTOS_CLIGetParameter(pcCommandString, 2, &paramterLen);
-	value = DecToInt((char *) parameterPtr, paramterLen);
-
-	if (value == 0)
-		value = GPIO_PIN_RESET;
-	else
-		value = GPIO_PIN_SET;
-
-
-	switch(num)
-	{
-		case 0:
-			HAL_GPIO_WritePin(WATER_PIN_0, value);
-			break;
-
-		case 1:
-			HAL_GPIO_WritePin(WATER_PIN_1, value);
-			break;
-
-		case 2:
-			HAL_GPIO_WritePin(WATER_PIN_2, value);
-			break;
-
-		case 3:
-			HAL_GPIO_WritePin(WATER_PIN_3, value);
-			break;
-
-		default:
-			break;
-
-	}
-	sprintf(pcWriteBuffer, "\n");
-
-	return pdFALSE;
-
-}
-
-static const CLI_Command_Definition_t xWaterSet =
-{
-	"wset",
-	"wset <n> <on/off>:\n    set pin<n> to on/off\n",
-	WATER_SetCommand,
-	2
-};
-#endif
 
 /**
  *
@@ -227,6 +173,36 @@ void WATER_SetController(uint8_t num, WATER_ControllerTypeDef *sController)
 
 	WATER_UpdateNextActiveController();
 }
+
+/**
+ *
+ * @return
+ */
+bool WATER_TryLock(void)
+{
+	if( xSemaphoreTake(m_waterLock, 0) )
+		return TRUE;
+	else
+		return FALSE;
+}
+
+/**
+ *
+ */
+void WATER_Unlock(void)
+{
+	xSemaphoreGive(m_waterLock);
+}
+
+/**
+ *
+ * @param num
+ */
+void WATER_ActiveController(uint8_t num)
+{
+	xQueueSend(m_cotrollerQueue, &num, 0);
+}
+
 /**
  * @brief Configure all pin
  */
@@ -279,6 +255,113 @@ void WATER_Disable(void)
 	HAL_GPIO_Init(WATER_PIN_3_PORT, &GPIO_InitStruct);
 }
 
+#if SUPPORT_WATER_TEST_COMMAND
+/**
+ * @param	pcWriteBuffer
+ * @param	xWriteBufferLen
+ * @param	pcCommandString
+ * @return
+ */
+static BaseType_t WATER_SetCommand(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString)
+{
+	const char *parameterPtr;
+	int32_t paramterLen;
+	uint32_t num, value;
+
+	parameterPtr = FreeRTOS_CLIGetParameter(pcCommandString, 1, &paramterLen);
+	num = DecToInt((char *) parameterPtr, paramterLen);
+
+	parameterPtr = FreeRTOS_CLIGetParameter(pcCommandString, 2, &paramterLen);
+	value = DecToInt((char *) parameterPtr, paramterLen);
+
+	if (value == 0)
+		value = GPIO_PIN_RESET;
+	else
+		value = GPIO_PIN_SET;
+
+
+	switch(num)
+	{
+		case 0:
+			HAL_GPIO_WritePin(WATER_PIN_0, value);
+			break;
+
+		case 1:
+			HAL_GPIO_WritePin(WATER_PIN_1, value);
+			break;
+
+		case 2:
+			HAL_GPIO_WritePin(WATER_PIN_2, value);
+			break;
+
+		case 3:
+			HAL_GPIO_WritePin(WATER_PIN_3, value);
+			break;
+
+		default:
+			break;
+
+	}
+	sprintf(pcWriteBuffer, "\n");
+
+	return pdFALSE;
+
+}
+
+static const CLI_Command_Definition_t xWaterSet =
+{
+	"wset",
+	"wset <n> <on/off>:\n    set pin<n> to on/off\n",
+	WATER_SetCommand,
+	2
+};
+
+static BaseType_t WATER_ActiveCommand(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString)
+{
+	const char *parameterPtr;
+	int32_t paramterLen;
+	uint32_t num;
+
+	parameterPtr = FreeRTOS_CLIGetParameter(pcCommandString, 1, &paramterLen);
+	num = DecToInt((char *) parameterPtr, paramterLen);
+
+	WATER_ActiveController(num);
+
+	sprintf(pcWriteBuffer, "\n");
+
+	return pdFALSE;
+
+}
+
+static const CLI_Command_Definition_t xWaterActive =
+{
+	"wact",
+	"wact <n>:\n    active controller <n>\n",
+	WATER_ActiveCommand,
+	1
+};
+
+#endif
+
+/**
+ * @brief Water task for valve controlling
+ * @param pvParameters
+ */
+static void WATER_Task( void *pvParameters )
+{
+	uint8_t activedController;
+	while(1)
+	{
+		xQueueReceive(m_cotrollerQueue, &activedController, portMAX_DELAY);
+
+		xSemaphoreTake(m_waterLock, portMAX_DELAY);
+
+		DEBUG_printf(DBG_WATER, "Active controller %d\n", (int)activedController);
+
+		xSemaphoreGive(m_waterLock);
+	}
+}
+
 /**
  * @brief Configure hardware and create tasks
  */
@@ -288,8 +371,14 @@ void WATER_Init(void)
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 	WATER_Enable();
 
+	m_waterLock = xSemaphoreCreateMutex();
+	m_cotrollerQueue = xQueueCreate(CONTROLLER_QUEUE_SIZE, sizeof(uint8_t));
 
 #if SUPPORT_WATER_TEST_COMMAND
 	FreeRTOS_CLIRegisterCommand(&xWaterSet);
+	FreeRTOS_CLIRegisterCommand(&xWaterActive);
 #endif
+
+	xTaskCreate(WATER_Task, "WATER", WATER_TASK_STACK, NULL, WATER_TASK_PRIORITY, NULL);
+
 }
