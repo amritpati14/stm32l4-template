@@ -18,10 +18,11 @@
 #include "keypad-d-hal.h"
 #include "menufunc.h"
 #include "usart.h"
+#include "water.h"
 
 /* Private typedef -----------------------------------------------------------*/
 #define MENU_TASK_PRIORITY					( tskIDLE_PRIORITY + 1UL )
-#define MENU_TASK_STACK						( 2048/4 ) 							// 2048 bytes
+#define MENU_TASK_STACK						(2048/4) // 2048 bytes
 
 #define MENU_KEY_POLLING_DELAY				(10 / portTICK_PERIOD_MS)
 #define MENU_KEY_DETECTION_TIMEOUT			(400 / portTICK_PERIOD_MS)
@@ -33,7 +34,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 static Menu_t *m_currentMenu;
-static uint32_t m_wakeupEvent = 0;
+volatile uint32_t m_wakeupEvent = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -220,18 +221,11 @@ void MENU_Sleep(void)
 	// Disable systick interrupt to prevent that wake up immediately
 	SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk;
 
-	MX_USART2_UART_DeInit();
-	KEY_EnableIRQ();
-
 	HAL_PWR_EnterSTOPMode(PWR_LOWPOWERREGULATOR_ON, PWR_STOPENTRY_WFI);
 	SystemClock_Config();
 
-	KEY_DisableIRQ();
-	MX_USART2_UART_Init();
-
 	// Enable systick interrupt
 	SysTick->CTRL |= SysTick_CTRL_TICKINT_Msk;
-
 }
 
 /**
@@ -244,18 +238,41 @@ static void MENU_Task( void *pvParameters )
 
 	while(1)
 	{
+		// Check alarm event
+		if (m_wakeupEvent & MENU_WAKEUP_ALARM)
+		{
+			MENU_ClrWakeupEvent(MENU_WAKEUP_ALARM);
+
+			uint8_t nextController;
+			nextController = WATER_GetNextActiveController();
+			WATER_QueueController(nextController);
+			WATER_UpdateNextActiveController();
+		}
 
 		// Check keypad event
-		if( m_wakeupEvent & MENU_WAKEUP_KEYPAD)
+		if (m_wakeupEvent & MENU_WAKEUP_KEYPAD)
 		{
-			MENU_ClrWakeupEvent(MENU_WAKEUP_KEYPAD);
-
+			KEY_DisableIRQ();
 			LCD_Enable();
 			MENU_InputProcess();
 			LCD_Disable();
+			KEY_EnableIRQ();
+			MENU_ClrWakeupEvent(MENU_WAKEUP_KEYPAD);
 		}
 
-		MENU_Sleep();
+		if (m_wakeupEvent == 0)
+		{
+			if (WATER_TryLock())
+			{
+				DEBUG_printf(DBG_MENU, "\n%s: Sleep\n", __FUNCTION__);
+				MENU_Sleep();
+				WATER_Unlock();
+			}
+			else
+			{
+				vTaskDelay(100);
+			}
+		}
 	}
 
 }

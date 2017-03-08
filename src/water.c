@@ -22,10 +22,10 @@
 
 /* Private define ------------------------------------------------------------*/
 #define WATER_TASK_PRIORITY						( tskIDLE_PRIORITY + 4UL )
-#define WATER_TASK_STACK						( 2048/4 ) 							// 2048 bytes
+#define WATER_TASK_STACK						(2048/4) // 2048 bytes
 
-#define SUPPORT_WATER_TEST_COMMAND				1 // debug command for FreeRTOS-CLI
-#define DBG_WATER								1
+#define SUPPORT_WATER_TEST_COMMAND				0 // debug command for FreeRTOS-CLI
+#define DBG_WATER								0
 
 // Pin mapping
 #define WATER_PIN_0_PORT						GPIOB
@@ -51,9 +51,9 @@ int16_t m_nextActiveController = -1;
 WATER_ControllerTypeDef m_Controller[MAX_WATER_CONTROLLER_NUM] =
 {
 	{ 7, 0, 0, 200},
-	{ 7, 10, 0, 200},
-	{ 7, 20, 0, 200},
-	{ 7, 30, 0, 200},
+	{ 7, 0, 0, 200},
+	{ 7, 0, 0, 200},
+	{ 7, 0, 0, 200},
 };
 
 static SemaphoreHandle_t m_waterLock;
@@ -81,14 +81,14 @@ int16_t WATER_FindNextActiveController(void)
 	int32_t timeDiff;
 	int32_t curTime;
 
-	curTime = sTime.Hours * 60 * 60 + sTime.Minutes * 60 + sTime.Seconds;
+	curTime = sTime.Hours * 60 * 60 + sTime.Minutes * 60 + sTime.Seconds + 1;
 
 	int i;
 	for(i = 0; i < MAX_WATER_CONTROLLER_NUM; i++)
 	{
 		if (m_Controller[i].Period == 0) continue;
 
-		timeDiff = m_Controller[i].Hour * 60 * 60 + m_Controller[i].Minutes * 60 - curTime;
+		timeDiff = m_Controller[i].Hour * 60 * 60 + m_Controller[i].Minutes * 60 + i * 10 - curTime;
 
 		if (timeDiff < 0) timeDiff += 24 * 60 * 60;
 
@@ -116,7 +116,7 @@ void WATER_UpdateNextActiveController(void)
 		RTC_AlarmTypeDef sAlarm;
 		sAlarm.AlarmTime.Hours = m_Controller[m_nextActiveController].Hour;
 		sAlarm.AlarmTime.Minutes = m_Controller[m_nextActiveController].Minutes;
-		sAlarm.AlarmTime.Seconds = 0;
+		sAlarm.AlarmTime.Seconds = m_nextActiveController * 10;
 		sAlarm.AlarmTime.SubSeconds = 0;
 		sAlarm.AlarmTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
 		sAlarm.AlarmTime.StoreOperation = RTC_STOREOPERATION_RESET;
@@ -127,6 +127,10 @@ void WATER_UpdateNextActiveController(void)
 		sAlarm.Alarm = RTC_ALARM_A;
 
 		HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, RTC_FORMAT_BIN);
+
+		HAL_RTC_GetAlarm(&hrtc, &sAlarm, RTC_ALARM_A, RTC_FORMAT_BIN);
+		DEBUG_printf(DBG_WATER, "set alarm controller %d @ %2d:%02d:%02d\n", (int)m_nextActiveController, sAlarm.AlarmTime.Hours,
+				sAlarm.AlarmTime.Minutes, sAlarm.AlarmTime.Seconds);
 	}
 }
 
@@ -198,7 +202,7 @@ void WATER_Unlock(void)
  *
  * @param num
  */
-void WATER_ActiveController(uint8_t num)
+void WATER_QueueController(uint8_t num)
 {
 	xQueueSend(m_cotrollerQueue, &num, 0);
 }
@@ -206,53 +210,78 @@ void WATER_ActiveController(uint8_t num)
 /**
  * @brief Configure all pin
  */
-void WATER_Enable(void)
+void WATER_EnableController(uint8_t num)
 {
 	GPIO_InitTypeDef GPIO_InitStruct;
-
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 
-	GPIO_InitStruct.Pin = WATER_PIN_0_NUM;
-	HAL_GPIO_Init(WATER_PIN_0_PORT, &GPIO_InitStruct);
-	GPIO_InitStruct.Pin = WATER_PIN_1_NUM;
-	HAL_GPIO_Init(WATER_PIN_1_PORT, &GPIO_InitStruct);
-	GPIO_InitStruct.Pin = WATER_PIN_2_NUM;
-	HAL_GPIO_Init(WATER_PIN_2_PORT, &GPIO_InitStruct);
-	GPIO_InitStruct.Pin = WATER_PIN_3_NUM;
-	HAL_GPIO_Init(WATER_PIN_3_PORT, &GPIO_InitStruct);
+	switch (num)
+	{
+		case 0:
+			GPIO_InitStruct.Pin = WATER_PIN_0_NUM;
+			HAL_GPIO_Init(WATER_PIN_0_PORT, &GPIO_InitStruct);
+			HAL_GPIO_WritePin(WATER_PIN_0, GPIO_PIN_SET);
+			break;
 
-	HAL_GPIO_WritePin(WATER_PIN_0, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(WATER_PIN_1, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(WATER_PIN_2, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(WATER_PIN_3, GPIO_PIN_RESET);
+		case 1:
+			GPIO_InitStruct.Pin = WATER_PIN_1_NUM;
+			HAL_GPIO_Init(WATER_PIN_1_PORT, &GPIO_InitStruct);
+			HAL_GPIO_WritePin(WATER_PIN_1, GPIO_PIN_SET);
+			break;
+
+		case 2:
+			GPIO_InitStruct.Pin = WATER_PIN_2_NUM;
+			HAL_GPIO_Init(WATER_PIN_2_PORT, &GPIO_InitStruct);
+			HAL_GPIO_WritePin(WATER_PIN_2, GPIO_PIN_SET);
+			break;
+
+		case 3:
+			GPIO_InitStruct.Pin = WATER_PIN_3_NUM;
+			HAL_GPIO_Init(WATER_PIN_3_PORT, &GPIO_InitStruct);
+			HAL_GPIO_WritePin(WATER_PIN_3, GPIO_PIN_SET);
+			break;
+	}
 }
 
 /**
  * @brief configure all pins to analog mode for power consumption
  */
-void WATER_Disable(void)
+void WATER_DisableController(uint8_t num)
 {
-	HAL_GPIO_WritePin(WATER_PIN_0, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(WATER_PIN_1, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(WATER_PIN_2, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(WATER_PIN_3, GPIO_PIN_RESET);
-
 	GPIO_InitTypeDef GPIO_InitStruct;
 
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 
-	GPIO_InitStruct.Pin = WATER_PIN_0_NUM;
-	HAL_GPIO_Init(WATER_PIN_0_PORT, &GPIO_InitStruct);
-	GPIO_InitStruct.Pin = WATER_PIN_1_NUM;
-	HAL_GPIO_Init(WATER_PIN_1_PORT, &GPIO_InitStruct);
-	GPIO_InitStruct.Pin = WATER_PIN_2_NUM;
-	HAL_GPIO_Init(WATER_PIN_2_PORT, &GPIO_InitStruct);
-	GPIO_InitStruct.Pin = WATER_PIN_3_NUM;
-	HAL_GPIO_Init(WATER_PIN_3_PORT, &GPIO_InitStruct);
+	switch (num)
+	{
+		case 0:
+			HAL_GPIO_WritePin(WATER_PIN_0, GPIO_PIN_RESET);
+			GPIO_InitStruct.Pin = WATER_PIN_0_NUM;
+			HAL_GPIO_Init(WATER_PIN_0_PORT, &GPIO_InitStruct);
+			break;
+
+		case 1:
+			HAL_GPIO_WritePin(WATER_PIN_1, GPIO_PIN_RESET);
+			GPIO_InitStruct.Pin = WATER_PIN_1_NUM;
+			HAL_GPIO_Init(WATER_PIN_1_PORT, &GPIO_InitStruct);
+			break;
+
+		case 2:
+			HAL_GPIO_WritePin(WATER_PIN_2, GPIO_PIN_RESET);
+			GPIO_InitStruct.Pin = WATER_PIN_2_NUM;
+			HAL_GPIO_Init(WATER_PIN_2_PORT, &GPIO_InitStruct);
+			break;
+
+		case 3:
+			HAL_GPIO_WritePin(WATER_PIN_3, GPIO_PIN_RESET);
+			GPIO_InitStruct.Pin = WATER_PIN_3_NUM;
+			HAL_GPIO_Init(WATER_PIN_3_PORT, &GPIO_InitStruct);
+			break;
+	}
 }
 
 #if SUPPORT_WATER_TEST_COMMAND
@@ -325,7 +354,7 @@ static BaseType_t WATER_ActiveCommand(char *pcWriteBuffer, size_t xWriteBufferLe
 	parameterPtr = FreeRTOS_CLIGetParameter(pcCommandString, 1, &paramterLen);
 	num = DecToInt((char *) parameterPtr, paramterLen);
 
-	WATER_ActiveController(num);
+	WATER_QueueController(num);
 
 	sprintf(pcWriteBuffer, "\n");
 
@@ -356,7 +385,12 @@ static void WATER_Task( void *pvParameters )
 
 		xSemaphoreTake(m_waterLock, portMAX_DELAY);
 
-		DEBUG_printf(DBG_WATER, "Active controller %d\n", (int)activedController);
+		WATER_EnableController(activedController);
+		DEBUG_printf(DBG_WATER, "Enable controller %d, %d sec\n", (int)activedController, m_Controller[activedController].Period);
+		vTaskDelay(m_Controller[activedController].Period * 1000 );
+
+		WATER_DisableController(activedController);
+		DEBUG_printf(DBG_WATER, "Disable controller %d\n", (int)activedController);
 
 		xSemaphoreGive(m_waterLock);
 	}
@@ -369,10 +403,11 @@ void WATER_Init(void)
 {
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOB_CLK_ENABLE();
-	WATER_Enable();
 
 	m_waterLock = xSemaphoreCreateMutex();
 	m_cotrollerQueue = xQueueCreate(CONTROLLER_QUEUE_SIZE, sizeof(uint8_t));
+
+	WATER_UpdateNextActiveController();
 
 #if SUPPORT_WATER_TEST_COMMAND
 	FreeRTOS_CLIRegisterCommand(&xWaterSet);
