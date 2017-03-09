@@ -242,10 +242,7 @@ static void MENU_Task( void *pvParameters )
 		if (m_wakeupEvent & MENU_WAKEUP_ALARM)
 		{
 			MENU_ClrWakeupEvent(MENU_WAKEUP_ALARM);
-
-			uint8_t nextController;
-			nextController = WATER_GetNextActiveController();
-			WATER_QueueController(nextController);
+			WATER_AlarmHandler();
 			WATER_UpdateNextActiveController();
 		}
 

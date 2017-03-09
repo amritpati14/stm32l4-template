@@ -202,9 +202,10 @@ void WATER_Unlock(void)
  *
  * @param num
  */
-void WATER_QueueController(uint8_t num)
+void WATER_AlarmHandler(void)
 {
-	xQueueSend(m_cotrollerQueue, &num, 0);
+	if (m_nextActiveController != -1)
+		xQueueSend(m_cotrollerQueue, &m_nextActiveController, 0);
 }
 
 /**
@@ -354,7 +355,7 @@ static BaseType_t WATER_ActiveCommand(char *pcWriteBuffer, size_t xWriteBufferLe
 	parameterPtr = FreeRTOS_CLIGetParameter(pcCommandString, 1, &paramterLen);
 	num = DecToInt((char *) parameterPtr, paramterLen);
 
-	WATER_QueueController(num);
+	WATER_AlarmHandler(num);
 
 	sprintf(pcWriteBuffer, "\n");
 
@@ -405,7 +406,7 @@ void WATER_Init(void)
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 
 	m_waterLock = xSemaphoreCreateMutex();
-	m_cotrollerQueue = xQueueCreate(CONTROLLER_QUEUE_SIZE, sizeof(uint8_t));
+	m_cotrollerQueue = xQueueCreate(CONTROLLER_QUEUE_SIZE, sizeof(int16_t));
 
 	WATER_UpdateNextActiveController();
 
