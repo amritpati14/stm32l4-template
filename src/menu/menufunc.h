@@ -41,7 +41,7 @@ typedef struct
 /* Exported constants --------------------------------------------------------*/
 #define MENU_DEFAULT_MENU				(infoMenu)
 
-#define DBG_MENU						1
+#define DBG_MENU						0
 
 /* Exported macro ------------------------------------------------------------*/
 

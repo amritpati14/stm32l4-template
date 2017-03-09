@@ -160,6 +160,7 @@ void infoMenu_Set(void)
 		m_curTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
 		m_curTime.StoreOperation = RTC_STOREOPERATION_RESET;
 		HAL_RTC_SetTime(&hrtc, &m_curTime, RTC_FORMAT_BIN);
+		WATER_UpdateNextActiveController();
 
 		m_setClock = FALSE;
 		LCD_Blink(DISABLE);

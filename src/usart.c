@@ -33,11 +33,13 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+#include "global.h"
 #include "usart.h"
-
 #include "gpio.h"
 
 /* USER CODE BEGIN 0 */
+
+SemaphoreHandle_t xPrintMutex;
 
 /* USER CODE END 0 */
 
@@ -80,6 +82,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
   if(uartHandle->Instance==USART2)
   {
   /* USER CODE BEGIN USART2_MspInit 0 */
+
+    xPrintMutex = xSemaphoreCreateMutex();
 
   /* USER CODE END USART2_MspInit 0 */
     /* Peripheral clock enable */
