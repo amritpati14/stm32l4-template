@@ -50,10 +50,10 @@
 int16_t m_nextActiveController = -1;
 WATER_ControllerTypeDef m_Controller[MAX_WATER_CONTROLLER_NUM] =
 {
-	{ 7, 0, 0, 200},
-	{ 7, 0, 0, 200},
-	{ 7, 0, 0, 200},
-	{ 7, 0, 0, 200},
+	{ 7, 0, 0, 400},
+	{ 7, 0, 0, 400},
+	{ 7, 0, 0, 400},
+	{ 7, 0, 0, 400},
 };
 
 static SemaphoreHandle_t m_waterLock;

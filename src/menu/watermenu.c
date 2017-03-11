@@ -18,11 +18,12 @@
 #include "menufunc.h"
 #include "calendar.h"
 #include "water.h"
+#include "moisture.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
-#define MOISTURE_UPDATE_TIME					500
+#define MOISTURE_UPDATE_TIME					1000
 
 #define CURSOR_POS_HOUR							0
 #define CURSOR_POS_MIN							1
@@ -40,6 +41,7 @@ static int32_t m_lastUpdateTime;
 static uint8_t m_controllerNum;
 static bool m_setController = FALSE;
 static uint8_t m_curPos;
+static int16_t m_curMoisture;
 
 static WATER_ControllerTypeDef m_curController;
 
@@ -66,7 +68,7 @@ void waterMenu_PrintController(void)
 	else
 		LCD_Put(' ');
 
-	sprintf(buf, " %2d sec    /%3d", m_curController.Period, m_curController.Moisture);
+	sprintf(buf, " %2d sec %3d/%3d", m_curController.Period, m_curMoisture, m_curController.Moisture);
 	LCD_Print(buf);
 
 }
@@ -87,6 +89,8 @@ void waterMenu_Open(void)
 	LCD_CreateFont(CHAR_UP_ARROW, fUpArrow);
 	LCD_CreateFont(CHAR_DOWN_ARROW, fDownArrow);
 
+	m_curMoisture = MOISTURE_Read(m_controllerNum);
+	m_curMoisture = MOISTURE_Read(m_controllerNum);
 	waterMenu_PrintController();
 
 	LCD_Display(ENABLE);
@@ -162,6 +166,7 @@ void waterMenu_Up(void)
 		{
 			m_controllerNum--;
 			WATER_GetController(m_controllerNum, &m_curController);
+			m_curMoisture = MOISTURE_Read(m_controllerNum);
 			waterMenu_PrintController();
 		}
 	}
@@ -189,10 +194,10 @@ void waterMenu_Up(void)
 				break;
 
 			case CURSOR_POS_MOISTURE:
-				if (m_curController.Moisture < 240)
+				if (m_curController.Moisture < 790)
 					m_curController.Moisture += 10;
 				else
-					m_curController.Moisture = 250;
+					m_curController.Moisture = 800;
 				break;
 		}
 
@@ -215,6 +220,7 @@ void waterMenu_Down(void)
 		{
 			m_controllerNum++;
 			WATER_GetController(m_controllerNum, &m_curController);
+			m_curMoisture = MOISTURE_Read(m_controllerNum);
 			waterMenu_PrintController();
 		}
 	}
@@ -291,11 +297,23 @@ void waterMenu_Cancel(void)
 	}
 }
 
+void waterMenu_Redraw(void)
+{
+	if( m_setController ) return;
+
+	if ((((int32_t) xTaskGetTickCount()) - m_lastUpdateTime) > MOISTURE_UPDATE_TIME)
+	{
+		m_lastUpdateTime = xTaskGetTickCount();
+		m_curMoisture = MOISTURE_Read(m_controllerNum);
+		waterMenu_PrintController();
+	}
+}
+
 Menu_t waterMenu =
 {
 	.open = waterMenu_Open,
 	.close = NULL,
-	.redraw = NULL,
+	.redraw = waterMenu_Redraw,
 	.up = waterMenu_Up,
 	.down = waterMenu_Down,
 	.right = waterMenu_Right,

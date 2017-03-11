@@ -28,7 +28,7 @@ typedef struct
 	uint8_t Hour;
 	uint8_t Minutes;
 	uint8_t Period;
-	uint8_t Moisture;
+	uint16_t Moisture;
 } WATER_ControllerTypeDef;
 
 /* Exported constants --------------------------------------------------------*/

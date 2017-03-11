@@ -53,6 +53,7 @@ void infoMenu_Redraw(void)
 
 	if ((((int32_t) xTaskGetTickCount()) - m_lastUpdateTime) > CLOCK_UPDATE_TIME)
 	{
+		m_lastUpdateTime = xTaskGetTickCount();
 		HAL_RTC_GetTime(&hrtc, &m_curTime, RTC_FORMAT_BIN);
 
 		RTC_DateTypeDef sDate;

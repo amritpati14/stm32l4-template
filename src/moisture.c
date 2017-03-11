@@ -114,7 +114,7 @@ void MOISTURE_Enable(void)
 
 	hadc1.Instance = ADC1;
 	hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
-	hadc1.Init.Resolution = ADC_RESOLUTION_8B;
+	hadc1.Init.Resolution = ADC_RESOLUTION_10B;
 	hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
 	hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
 	hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
@@ -234,6 +234,8 @@ int16_t MOISTURE_Read(int8_t ch)
 		if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
 		{
 			ret = HAL_ADC_GetValue(&hadc1);
+			HAL_ADC_Stop(&hadc1);
+			MOISTURE_Disable();
 			break;
 		}
 
