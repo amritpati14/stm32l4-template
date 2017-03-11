@@ -40,6 +40,7 @@
 #include "menu.h"
 #include "calendar.h"
 #include "water.h"
+#include "moisture.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -90,6 +91,7 @@ int main(void)
   MENU_Init();
   CALENDAR_Init();
   WATER_Init();
+  MOISTURE_Init();
 
   /* USER CODE BEGIN 2 */
 

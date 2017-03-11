@@ -23,8 +23,8 @@ PROJECT_SOURCE			+=	stm32l4xx_hal.c								\
 							stm32l4xx_hal_tim.c							\
 							stm32l4xx_hal_tim_ex.c						\
 							stm32l4xx_hal_uart.c						\
-#							stm32l4xx_hal_adc.c							\
-#							stm32l4xx_hal_adc_ex.c						\
+							stm32l4xx_hal_adc.c							\
+							stm32l4xx_hal_adc_ex.c						\
 #							stm32l4xx_hal_can.c							\
 #							stm32l4xx_hal_comp.c						\
 #							stm32l4xx_hal_cortex.c						\
@@ -154,7 +154,8 @@ PROJECT_SOURCE			+=	main.c							\
 							watermenu.c						\
 							calendar.c						\
 							water.c							\
-
+							moisture.c						\
+							
 
 MCU_CC_FLAGS = $(CORTEX_M4_HWFP_CC_FLAGS)
 MCU_LIB_PATH = $(CORTEX_M4_HWFP_LIB_PATH)

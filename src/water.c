@@ -17,6 +17,7 @@
 #include "global.h"
 #include "water.h"
 #include "calendar.h"
+#include "moisture.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -50,10 +51,10 @@
 int16_t m_nextActiveController = -1;
 WATER_ControllerTypeDef m_Controller[MAX_WATER_CONTROLLER_NUM] =
 {
-	{ 7, 0, 0, 200},
-	{ 7, 0, 0, 200},
-	{ 7, 0, 0, 200},
-	{ 7, 0, 0, 200},
+	{ 7, 0, 0, 400},
+	{ 7, 0, 0, 400},
+	{ 7, 0, 0, 400},
+	{ 7, 0, 0, 400},
 };
 
 static SemaphoreHandle_t m_waterLock;
@@ -200,12 +201,20 @@ void WATER_Unlock(void)
 
 /**
  *
- * @param num
  */
 void WATER_AlarmHandler(void)
 {
 	if (m_nextActiveController != -1)
 		xQueueSend(m_cotrollerQueue, &m_nextActiveController, 0);
+}
+
+/**
+ *
+ */
+void WATER_OpenController(int16_t num)
+{
+	if (0<= num && num < MAX_WATER_CONTROLLER_NUM)
+		xQueueSend(m_cotrollerQueue, &num, 0);
 }
 
 /**
@@ -380,18 +389,25 @@ static const CLI_Command_Definition_t xWaterActive =
 static void WATER_Task( void *pvParameters )
 {
 	uint8_t activedController;
+	int16_t curMoisture;
+
 	while(1)
 	{
 		xQueueReceive(m_cotrollerQueue, &activedController, portMAX_DELAY);
 
 		xSemaphoreTake(m_waterLock, portMAX_DELAY);
 
-		WATER_EnableController(activedController);
-		DEBUG_printf(DBG_WATER, "Enable controller %d, %d sec\n", (int)activedController, m_Controller[activedController].Period);
-		vTaskDelay(m_Controller[activedController].Period * 1000 );
+		curMoisture = MOISTURE_Read(activedController);
 
-		WATER_DisableController(activedController);
-		DEBUG_printf(DBG_WATER, "Disable controller %d\n", (int)activedController);
+		if( curMoisture < m_Controller[activedController].Moisture )
+		{
+			WATER_EnableController(activedController);
+			DEBUG_printf(DBG_WATER, "Enable controller %d, %d sec\n", (int)activedController, m_Controller[activedController].Period);
+			vTaskDelay(m_Controller[activedController].Period * 1000 );
+
+			WATER_DisableController(activedController);
+			DEBUG_printf(DBG_WATER, "Disable controller %d\n", (int)activedController);
+		}
 
 		xSemaphoreGive(m_waterLock);
 	}
