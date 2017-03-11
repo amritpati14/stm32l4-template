@@ -45,6 +45,7 @@ void WATER_UpdateNextActiveController(void);
 bool WATER_TryLock(void);
 void WATER_Unlock(void);
 void WATER_AlarmHandler(void);
+void WATER_OpenController(int16_t num);
 
 #ifdef __cplusplus
 }

@@ -200,12 +200,20 @@ void WATER_Unlock(void)
 
 /**
  *
- * @param num
  */
 void WATER_AlarmHandler(void)
 {
 	if (m_nextActiveController != -1)
 		xQueueSend(m_cotrollerQueue, &m_nextActiveController, 0);
+}
+
+/**
+ *
+ */
+void WATER_OpenController(int16_t num)
+{
+	if (0<= num && num < MAX_WATER_CONTROLLER_NUM)
+		xQueueSend(m_cotrollerQueue, &num, 0);
 }
 
 /**

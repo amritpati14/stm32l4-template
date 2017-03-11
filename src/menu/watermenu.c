@@ -32,6 +32,11 @@
 
 #define CHAR_UP_ARROW							0
 #define CHAR_DOWN_ARROW							1
+
+#define MENU_MODE_NORMAL						0
+#define MENU_MODE_SET							1
+#define MENU_MODE_TEST							2
+
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -39,7 +44,7 @@
 /* Private function prototypes -----------------------------------------------*/
 static int32_t m_lastUpdateTime;
 static uint8_t m_controllerNum;
-static bool m_setController = FALSE;
+static uint8_t m_menuMode = MENU_MODE_NORMAL;
 static uint8_t m_curPos;
 static int16_t m_curMoisture;
 
@@ -81,7 +86,7 @@ void waterMenu_Open(void)
 	m_controllerNum = 0;
 	WATER_GetController(m_controllerNum, &m_curController);
 
-	m_setController = FALSE;
+	m_menuMode = MENU_MODE_NORMAL;
 	m_lastUpdateTime = (int32_t) xTaskGetTickCount();
 
 	LCD_Display(DISABLE);
@@ -129,12 +134,20 @@ void waterMenu_UpdataCurPos(void)
  */
 void waterMenu_Right(void)
 {
-	if(!m_setController) return;
-
-	if (m_curPos < CURSOR_POS_MOISTURE)
+	switch(m_menuMode)
 	{
-		m_curPos++;
-		waterMenu_UpdataCurPos();
+		case MENU_MODE_SET:
+			if (m_curPos < CURSOR_POS_MOISTURE)
+			{
+				m_curPos++;
+				waterMenu_UpdataCurPos();
+			}
+			break;
+
+		case MENU_MODE_NORMAL:
+		case MENU_MODE_TEST:
+		default:
+			break;
 	}
 }
 
@@ -143,12 +156,20 @@ void waterMenu_Right(void)
  */
 void waterMenu_Left(void)
 {
-	if(!m_setController) return;
-
-	if (m_curPos > CURSOR_POS_HOUR)
+	switch(m_menuMode)
 	{
-		m_curPos--;
-		waterMenu_UpdataCurPos();
+		case MENU_MODE_SET:
+			if (m_curPos > CURSOR_POS_HOUR)
+			{
+				m_curPos--;
+				waterMenu_UpdataCurPos();
+			}
+			break;
+
+		case MENU_MODE_NORMAL:
+		case MENU_MODE_TEST:
+		default:
+			break;
 	}
 }
 
@@ -158,53 +179,59 @@ void waterMenu_Left(void)
  */
 void waterMenu_Up(void)
 {
-	if(!m_setController)
+	switch(m_menuMode)
 	{
-		if( m_controllerNum == 0)
-			MENU_SwitchMenu(&infoMenu);
-		else
-		{
-			m_controllerNum--;
-			WATER_GetController(m_controllerNum, &m_curController);
-			m_curMoisture = MOISTURE_Read(m_controllerNum);
+		case MENU_MODE_NORMAL:
+			if( m_controllerNum == 0)
+				MENU_SwitchMenu(&infoMenu);
+			else
+			{
+				m_controllerNum--;
+				WATER_GetController(m_controllerNum, &m_curController);
+				m_curMoisture = MOISTURE_Read(m_controllerNum);
+				waterMenu_PrintController();
+			}
+			break;
+
+		case MENU_MODE_SET:
+			switch (m_curPos)
+			{
+				case CURSOR_POS_HOUR:
+					if( m_curController.Hour == 23 )
+						m_curController.Hour = 0;
+					else
+						m_curController.Hour++;
+					break;
+
+				case CURSOR_POS_MIN:
+					if( m_curController.Minutes == 59 )
+						m_curController.Minutes = 0;
+					else
+						m_curController.Minutes++;
+					break;
+
+				case CURSOR_POS_PERIOD:
+					if (m_curController.Period < 30)
+						m_curController.Period++;
+					break;
+
+				case CURSOR_POS_MOISTURE:
+					if (m_curController.Moisture < 790)
+						m_curController.Moisture += 10;
+					else
+						m_curController.Moisture = 800;
+					break;
+			}
+
+			LCD_Blink(DISABLE);
 			waterMenu_PrintController();
-		}
-	}
-	else
-	{
-		switch (m_curPos)
-		{
-			case CURSOR_POS_HOUR:
-				if( m_curController.Hour == 23 )
-					m_curController.Hour = 0;
-				else
-					m_curController.Hour++;
-				break;
+			waterMenu_UpdataCurPos();
+			LCD_Blink(ENABLE);
+			break;
 
-			case CURSOR_POS_MIN:
-				if( m_curController.Minutes == 59 )
-					m_curController.Minutes = 0;
-				else
-					m_curController.Minutes++;
-				break;
-
-			case CURSOR_POS_PERIOD:
-				if (m_curController.Period < 30)
-					m_curController.Period++;
-				break;
-
-			case CURSOR_POS_MOISTURE:
-				if (m_curController.Moisture < 790)
-					m_curController.Moisture += 10;
-				else
-					m_curController.Moisture = 800;
-				break;
-		}
-
-		LCD_Blink(DISABLE);
-		waterMenu_PrintController();
-		waterMenu_UpdataCurPos();
-		LCD_Blink(ENABLE);
+		case MENU_MODE_TEST:
+		default:
+			break;
 	}
 }
 
@@ -213,52 +240,62 @@ void waterMenu_Up(void)
  */
 void waterMenu_Down(void)
 {
-	if (!m_setController)
+	switch(m_menuMode)
 	{
+		case MENU_MODE_NORMAL:
+			if (m_controllerNum < (MAX_WATER_CONTROLLER_NUM - 1))
+			{
+				m_controllerNum++;
+				WATER_GetController(m_controllerNum, &m_curController);
+				m_curMoisture = MOISTURE_Read(m_controllerNum);
+				waterMenu_PrintController();
+			}
+			break;
 
-		if (m_controllerNum < (MAX_WATER_CONTROLLER_NUM - 1))
-		{
-			m_controllerNum++;
-			WATER_GetController(m_controllerNum, &m_curController);
-			m_curMoisture = MOISTURE_Read(m_controllerNum);
+		case MENU_MODE_SET:
+			switch (m_curPos)
+			{
+				case CURSOR_POS_HOUR:
+					if( m_curController.Hour == 0 )
+						m_curController.Hour = 23;
+					else
+						m_curController.Hour--;
+					break;
+
+				case CURSOR_POS_MIN:
+					if( m_curController.Minutes == 0 )
+						m_curController.Minutes = 59;
+					else
+						m_curController.Minutes--;
+					break;
+
+				case CURSOR_POS_PERIOD:
+					if (m_curController.Period > 0)
+						m_curController.Period--;
+					break;
+
+				case CURSOR_POS_MOISTURE:
+					if (m_curController.Moisture >= 10)
+						m_curController.Moisture -= 10;
+					else
+						m_curController.Moisture = 0;
+					break;
+			}
+
+			LCD_Blink(DISABLE);
 			waterMenu_PrintController();
-		}
-	}
-	else
-	{
-		switch (m_curPos)
-		{
-			case CURSOR_POS_HOUR:
-				if( m_curController.Hour == 0 )
-					m_curController.Hour = 23;
-				else
-					m_curController.Hour--;
-				break;
+			waterMenu_UpdataCurPos();
+			LCD_Blink(ENABLE);
+			break;
 
-			case CURSOR_POS_MIN:
-				if( m_curController.Minutes == 0 )
-					m_curController.Minutes = 59;
-				else
-					m_curController.Minutes--;
-				break;
+		case MENU_MODE_TEST:
+			m_menuMode = MENU_MODE_NORMAL;
+			waterMenu_PrintController();
+			break;
 
-			case CURSOR_POS_PERIOD:
-				if (m_curController.Period > 0)
-					m_curController.Period--;
-				break;
+		default:
+			break;
 
-			case CURSOR_POS_MOISTURE:
-				if (m_curController.Moisture >= 10)
-					m_curController.Moisture -= 10;
-				else
-					m_curController.Moisture = 0;
-				break;
-		}
-
-		LCD_Blink(DISABLE);
-		waterMenu_PrintController();
-		waterMenu_UpdataCurPos();
-		LCD_Blink(ENABLE);
 	}
 }
 
@@ -267,19 +304,32 @@ void waterMenu_Down(void)
  */
 void waterMenu_Set(void)
 {
-	if( m_setController )
+	switch(m_menuMode)
 	{
-		m_setController = FALSE;
-		WATER_SetController(m_controllerNum, &m_curController);
-		LCD_Blink(DISABLE);
-		waterMenu_PrintController();
-	}
-	else
-	{
-		m_setController = TRUE;
-		m_curPos = CURSOR_POS_HOUR;
-		waterMenu_UpdataCurPos();
-		LCD_Blink(ENABLE);
+		case MENU_MODE_NORMAL:
+			m_menuMode = MENU_MODE_SET;
+			m_curPos = CURSOR_POS_HOUR;
+			waterMenu_UpdataCurPos();
+			LCD_Blink(ENABLE);
+			break;
+
+		case MENU_MODE_SET:
+			m_menuMode = MENU_MODE_NORMAL;
+			WATER_SetController(m_controllerNum, &m_curController);
+			LCD_Blink(DISABLE);
+			waterMenu_PrintController();
+			break;
+
+		case MENU_MODE_TEST:
+			m_menuMode = MENU_MODE_NORMAL;
+			if( m_curController.Period != 0)
+				WATER_OpenController(m_controllerNum);
+			LCD_Blink(DISABLE);
+			waterMenu_PrintController();
+			break;
+
+		default:
+			break;
 	}
 }
 
@@ -288,25 +338,60 @@ void waterMenu_Set(void)
  */
 void waterMenu_Cancel(void)
 {
-	if( m_setController )
+	switch(m_menuMode)
 	{
-		m_setController = FALSE;
-		LCD_Blink(DISABLE);
-		WATER_GetController(m_controllerNum, &m_curController);
-		waterMenu_PrintController();
+		case MENU_MODE_SET:
+			m_menuMode = MENU_MODE_NORMAL;
+			LCD_Blink(DISABLE);
+			WATER_GetController(m_controllerNum, &m_curController);
+			waterMenu_PrintController();
+			break;
+
+		case MENU_MODE_NORMAL:
+			m_menuMode = MENU_MODE_TEST;
+
+			char buf[17];
+
+			LCD_Clear();
+			LCD_SetLoc(0,0);
+
+			sprintf(buf, "  <%d> Test?", m_controllerNum);
+			LCD_Print(buf);
+			LCD_Blink(ENABLE);
+
+			break;
+
+		case MENU_MODE_TEST:
+			m_menuMode = MENU_MODE_NORMAL;
+			LCD_Blink(DISABLE);
+			waterMenu_PrintController();
+			break;
+
+		default:
+			break;
 	}
 }
 
 void waterMenu_Redraw(void)
 {
-	if( m_setController ) return;
-
-	if ((((int32_t) xTaskGetTickCount()) - m_lastUpdateTime) > MOISTURE_UPDATE_TIME)
+	switch(m_menuMode)
 	{
-		m_lastUpdateTime = xTaskGetTickCount();
-		m_curMoisture = MOISTURE_Read(m_controllerNum);
-		waterMenu_PrintController();
+		case MENU_MODE_NORMAL:
+			if ((((int32_t) xTaskGetTickCount()) - m_lastUpdateTime) > MOISTURE_UPDATE_TIME)
+			{
+				m_lastUpdateTime = xTaskGetTickCount();
+				m_curMoisture = MOISTURE_Read(m_controllerNum);
+				waterMenu_PrintController();
+			}
+			break;
+
+		case MENU_MODE_TEST:
+		case MENU_MODE_SET:
+		default:
+			break;
+
 	}
+
 }
 
 Menu_t waterMenu =
