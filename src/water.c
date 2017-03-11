@@ -17,6 +17,7 @@
 #include "global.h"
 #include "water.h"
 #include "calendar.h"
+#include "moisture.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -388,18 +389,25 @@ static const CLI_Command_Definition_t xWaterActive =
 static void WATER_Task( void *pvParameters )
 {
 	uint8_t activedController;
+	int16_t curMoisture;
+
 	while(1)
 	{
 		xQueueReceive(m_cotrollerQueue, &activedController, portMAX_DELAY);
 
 		xSemaphoreTake(m_waterLock, portMAX_DELAY);
 
-		WATER_EnableController(activedController);
-		DEBUG_printf(DBG_WATER, "Enable controller %d, %d sec\n", (int)activedController, m_Controller[activedController].Period);
-		vTaskDelay(m_Controller[activedController].Period * 1000 );
+		curMoisture = MOISTURE_Read(activedController);
 
-		WATER_DisableController(activedController);
-		DEBUG_printf(DBG_WATER, "Disable controller %d\n", (int)activedController);
+		if( curMoisture < m_Controller[activedController].Moisture )
+		{
+			WATER_EnableController(activedController);
+			DEBUG_printf(DBG_WATER, "Enable controller %d, %d sec\n", (int)activedController, m_Controller[activedController].Period);
+			vTaskDelay(m_Controller[activedController].Period * 1000 );
+
+			WATER_DisableController(activedController);
+			DEBUG_printf(DBG_WATER, "Disable controller %d\n", (int)activedController);
+		}
 
 		xSemaphoreGive(m_waterLock);
 	}
