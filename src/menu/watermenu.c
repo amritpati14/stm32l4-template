@@ -216,10 +216,10 @@ void waterMenu_Up(void)
 					break;
 
 				case CURSOR_POS_MOISTURE:
-					if (m_curController.Moisture < 790)
+					if (m_curController.Moisture < 240)
 						m_curController.Moisture += 10;
 					else
-						m_curController.Moisture = 800;
+						m_curController.Moisture = 250;
 					break;
 			}
 
