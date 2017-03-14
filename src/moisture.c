@@ -22,9 +22,23 @@
 #define SUPPORT_MOISTURE_TEST_COMMAND			0 // debug command for FreeRTOS-CLI
 #define DBG_MOISTURE							FALSE
 
-#define MOISTURE_POWER_GPIO_PORT				GPIOC
-#define MOISTURE_POWER_GPIO_PIN					GPIO_PIN_3
-#define MOISTURE_POWER_PIN						MOISTURE_POWER_GPIO_PORT, MOISTURE_POWER_GPIO_PIN
+#define MOISTURE_POWER_0_GPIO_PORT				GPIOH
+#define MOISTURE_POWER_0_GPIO_PIN				GPIO_PIN_0
+#define MOISTURE_POWER_0_PIN					MOISTURE_POWER_0_GPIO_PORT, MOISTURE_POWER_0_GPIO_PIN
+
+#define MOISTURE_POWER_1_GPIO_PORT				GPIOH
+#define MOISTURE_POWER_1_GPIO_PIN				GPIO_PIN_1
+#define MOISTURE_POWER_1_PIN					MOISTURE_POWER_1_GPIO_PORT, MOISTURE_POWER_1_GPIO_PIN
+
+#define MOISTURE_POWER_2_GPIO_PORT				GPIOC
+#define MOISTURE_POWER_2_GPIO_PIN				GPIO_PIN_2
+#define MOISTURE_POWER_2_PIN					MOISTURE_POWER_2_GPIO_PORT, MOISTURE_POWER_2_GPIO_PIN
+
+#define MOISTURE_POWER_3_GPIO_PORT				GPIOC
+#define MOISTURE_POWER_3_GPIO_PIN				GPIO_PIN_3
+#define MOISTURE_POWER_3_PIN					MOISTURE_POWER_3_GPIO_PORT, MOISTURE_POWER_3_GPIO_PIN
+
+
 #define MOISTURE_SENSOR0_GPIO_PORT				GPIOA
 #define MOISTURE_SENSOR0_GPIO_PIN				GPIO_PIN_4
 #define MOISTURE_SENSOR0_PIN					MOISTURE_SENSOR0_GPIO_PORT, MOISTURE_SENSOR0_GPIO_PIN
@@ -108,13 +122,13 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
 /**
  *
  */
-void MOISTURE_Enable(void)
+void MOISTURE_Enable(int8_t ch)
 {
 	ADC_MultiModeTypeDef multimode;
 
 	hadc1.Instance = ADC1;
 	hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
-	hadc1.Init.Resolution = ADC_RESOLUTION_10B;
+	hadc1.Init.Resolution = ADC_RESOLUTION_8B;
 	hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
 	hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
 	hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
@@ -143,26 +157,91 @@ void MOISTURE_Enable(void)
 
     // Configure sensor power pin
 	GPIO_InitTypeDef GPIO_InitStruct;
-	GPIO_InitStruct.Pin = MOISTURE_POWER_GPIO_PIN;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(MOISTURE_POWER_GPIO_PORT, &GPIO_InitStruct);
-	HAL_GPIO_WritePin(MOISTURE_POWER_PIN, GPIO_PIN_SET);
+
+	switch (ch)
+	{
+		case 0:
+			GPIO_InitStruct.Pin = MOISTURE_POWER_0_GPIO_PIN;
+			HAL_GPIO_Init(MOISTURE_POWER_0_GPIO_PORT, &GPIO_InitStruct);
+			HAL_GPIO_WritePin(MOISTURE_POWER_0_PIN, GPIO_PIN_SET);
+			break;
+
+		case 1:
+			GPIO_InitStruct.Pin = MOISTURE_POWER_1_GPIO_PIN;
+			HAL_GPIO_Init(MOISTURE_POWER_1_GPIO_PORT, &GPIO_InitStruct);
+			HAL_GPIO_WritePin(MOISTURE_POWER_1_PIN, GPIO_PIN_SET);
+			break;
+		case 2:
+			GPIO_InitStruct.Pin = MOISTURE_POWER_2_GPIO_PIN;
+			HAL_GPIO_Init(MOISTURE_POWER_2_GPIO_PORT, &GPIO_InitStruct);
+			HAL_GPIO_WritePin(MOISTURE_POWER_2_PIN, GPIO_PIN_SET);
+			break;
+		case 3:
+			GPIO_InitStruct.Pin = MOISTURE_POWER_3_GPIO_PIN;
+			HAL_GPIO_Init(MOISTURE_POWER_3_GPIO_PORT, &GPIO_InitStruct);
+			HAL_GPIO_WritePin(MOISTURE_POWER_3_PIN, GPIO_PIN_SET);
+			break;
+
+		default:
+			GPIO_InitStruct.Pin = MOISTURE_POWER_0_GPIO_PIN;
+			HAL_GPIO_Init(MOISTURE_POWER_0_GPIO_PORT, &GPIO_InitStruct);
+			HAL_GPIO_WritePin(MOISTURE_POWER_0_PIN, GPIO_PIN_SET);
+			break;
+	}
+
 }
 
 /**
  *
  */
-void MOISTURE_Disable(void)
+void MOISTURE_Disable(int8_t ch)
 {
-	HAL_GPIO_WritePin(MOISTURE_POWER_PIN, GPIO_PIN_RESET);
 
 	GPIO_InitTypeDef GPIO_InitStruct;
 	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	GPIO_InitStruct.Pin = MOISTURE_POWER_GPIO_PIN;
-	HAL_GPIO_Init(MOISTURE_POWER_GPIO_PORT, &GPIO_InitStruct);
+
+	switch (ch)
+	{
+		case 0:
+			HAL_GPIO_WritePin(MOISTURE_POWER_0_PIN, GPIO_PIN_RESET);
+
+			GPIO_InitStruct.Pin = MOISTURE_POWER_0_GPIO_PIN;
+			HAL_GPIO_Init(MOISTURE_POWER_0_GPIO_PORT, &GPIO_InitStruct);
+			break;
+
+		case 1:
+			HAL_GPIO_WritePin(MOISTURE_POWER_1_PIN, GPIO_PIN_RESET);
+
+			GPIO_InitStruct.Pin = MOISTURE_POWER_1_GPIO_PIN;
+			HAL_GPIO_Init(MOISTURE_POWER_1_GPIO_PORT, &GPIO_InitStruct);
+			break;
+
+		case 2:
+			HAL_GPIO_WritePin(MOISTURE_POWER_2_PIN, GPIO_PIN_RESET);
+
+			GPIO_InitStruct.Pin = MOISTURE_POWER_2_GPIO_PIN;
+			HAL_GPIO_Init(MOISTURE_POWER_2_GPIO_PORT, &GPIO_InitStruct);
+			break;
+
+		case 3:
+			HAL_GPIO_WritePin(MOISTURE_POWER_3_PIN, GPIO_PIN_RESET);
+
+			GPIO_InitStruct.Pin = MOISTURE_POWER_3_GPIO_PIN;
+			HAL_GPIO_Init(MOISTURE_POWER_3_GPIO_PORT, &GPIO_InitStruct);
+			break;
+
+		default:
+			HAL_GPIO_WritePin(MOISTURE_POWER_3_PIN, GPIO_PIN_RESET);
+
+			GPIO_InitStruct.Pin = MOISTURE_POWER_0_GPIO_PIN;
+			HAL_GPIO_Init(MOISTURE_POWER_0_GPIO_PORT, &GPIO_InitStruct);
+			break;
+	}
+
 
 	if (HAL_ADC_DeInit(&hadc1) != HAL_OK)
 	{
@@ -226,7 +305,7 @@ int16_t MOISTURE_Read(int8_t ch)
 	{
 		vTaskDelay(10);
 
-		MOISTURE_Enable();
+		MOISTURE_Enable(ch);
 		MOISTURE_SetChannel(ch);
 
 		HAL_ADC_Start(&hadc1);
@@ -235,12 +314,12 @@ int16_t MOISTURE_Read(int8_t ch)
 		{
 			ret = HAL_ADC_GetValue(&hadc1);
 			HAL_ADC_Stop(&hadc1);
-			MOISTURE_Disable();
+			MOISTURE_Disable(ch);
 			break;
 		}
 
 		HAL_ADC_Stop(&hadc1);
-		MOISTURE_Disable();
+		MOISTURE_Disable(ch);
 	}
 
 	return ret;
@@ -258,25 +337,6 @@ int16_t MOISTURE_Read(int8_t ch)
  */
 static BaseType_t MOISTURE_ReadCommand(char *pcWriteBuffer, size_t xWriteBufferLen, const char *pcCommandString)
 {
-#if 0
-	MOISTURE_Enable();
-
-	HAL_ADC_Start(&hadc1);
-    if (HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK)
-    {
-    	uint32_t value;
-    	value = HAL_ADC_GetValue(&hadc1);
-		sprintf(pcWriteBuffer, "ADC = %ld\n", value);
-    }
-    else
-    {
-		sprintf(pcWriteBuffer, "ADC Timeout!!!\n");
-    }
-    HAL_ADC_Stop(&hadc1);
-
-    MOISTURE_Disable();
-#endif
-
     const char *parameterPtr;
 	int32_t paramterLen;
 	uint32_t ch;
